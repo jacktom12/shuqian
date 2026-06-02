@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>书签</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+    <header class="mobile-header">
+        <div class="mobile-menu-btn" id="menuToggle">☰</div>
+        <div class="mobile-title">📚 成为你自己</div>
+    </header>
+
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-brand">
+            <h1>📚 成为你自己</h1>
+        </div>
+
+        <div class="stats-grid">
+            <div class="stat-card">
+                <span class="stat-num" id="bookmarkCount">0</span>
+                <span class="stat-label">总书签</span>
+            </div>
+            <div class="stat-card">
+                <span class="stat-num" id="favCount">0</span>
+                <span class="stat-label">精选</span>
+            </div>
+            <div class="stat-card">
+                <span class="stat-num" id="catCount">0</span>
+                <span class="stat-label">分类</span>
+            </div>
+            <div class="stat-card">
+                <span class="stat-num" id="tagCount">0</span>
+                <span class="stat-label">标签</span>
+            </div>
+        </div>
+
+        <div class="nav-section">
+            <h2>📁 分类目录</h2>
+            <nav id="categoryTree" class="category-tree">
+                </nav>
+        </div>
+
+        <div class="nav-section">
+            <h2>🏷️ 标签云</h2>
+            <div id="tagCloud" class="tag-cloud">
+                </div>
+        </div>
+    </aside>
+
+    <main>
+        <div class="search-sticky-wrapper">
+            <div class="search-box">
+                <svg class="search-icon" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
+                <input id="searchInput" type="text" placeholder="键入书签名称、关键词、标签描述即时高亮检索...">
+            </div>
+        </div>
+
+        <section id="favoriteSection" class="content-section">
+            <div class="section-header">
+                <h2>⭐ 精选收藏</h2>
+                <span class="badge" id="favBadgeCount">0</span>
+            </div>
+            <div id="favoriteContainer" class="cards-grid"></div>
+        </section>
+
+        <section class="content-section">
+            <div class="section-header">
+                <h2 id="currentViewTitle">📚 全部书签</h2>
+                <span class="badge" id="listBadgeCount">0</span>
+            </div>
+            <div id="bookmarkContainer" class="cards-grid"></div>
+        </section>
+    </main>
+
+    <script src="js/app.js"></script>
+</body>
+</html>
