@@ -2531,7 +2531,7 @@
       "图片素材"
     ],
     "desc": "",
-    "favorite": false
+    "favorite": true
   },
   {
     "title": "Semantic UI",
@@ -4958,7 +4958,7 @@
       "it之家"
     ],
     "desc": "",
-    "favorite": false
+    "favorite": true
   },
   {
     "title": "阿里云盘",
@@ -5272,7 +5272,7 @@
       "论坛"
     ],
     "desc": "",
-    "favorite": false
+    "favorite": true
   },
   {
     "title": "OKPT :: 种子 - Powered by NexusPHP",
