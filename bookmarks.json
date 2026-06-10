@@ -10,6 +10,16 @@
     "favorite": true
   },
   {
+    "title": "uiverse.io",
+    "url": "https://uiverse.io/",
+    "category": "前端",
+    "tags": [
+      "美化"
+    ],
+    "desc": "现成网页控件",
+    "favorite": true
+  },
+  {
     "title": "Yandex翻译",
     "url": "https://translate.yandex.com/",
     "category": "翻译",
