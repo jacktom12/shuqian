@@ -560,13 +560,13 @@ function favicon(url) {
   } catch (e) { return ""; }
 }
 
-/* ---------- 随机动漫壁纸 ---------- */
+ /* ---------- 随机动漫壁纸 ---------- */
 async function fetchRandomWallpaper() {
   try {
     const res = await fetch(API_BASE + "/api/wallpaper");
     const data = await res.json();
-    if (!data.ok || !data.url) throw new Error("no url");
-    return data.url;
+    if (!data.ok || !data.proxyUrl) throw new Error("no url");
+    return API_BASE + data.proxyUrl;
   } catch (e) {
     return "https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?q=80&w=1920";
   }
