@@ -158,6 +158,42 @@
     color: var(--text); font-size: 16px; padding: 12px 6px;
   }
   .search-shell input::placeholder { color: var(--text-dim); }
+
+  .suggest-wrap { position: relative; flex: 1; }
+  .suggest-list {
+    position: absolute;
+    top: calc(100% + 12px);
+    left: 0;
+    right: 0;
+    background: rgba(28, 30, 40, 0.88);
+    border: 1px solid var(--glass-border);
+    backdrop-filter: blur(28px) saturate(160%);
+    -webkit-backdrop-filter: blur(28px) saturate(160%);
+    border-radius: 16px;
+    padding: 6px;
+    box-shadow: 0 16px 40px rgba(0,0,0,0.45);
+    opacity: 0;
+    transform: translateY(-8px);
+    pointer-events: none;
+    transition: opacity 0.16s ease, transform 0.16s ease;
+    z-index: 400;
+    max-height: 320px;
+    overflow-y: auto;
+  }
+  .suggest-list.show { opacity: 1; transform: translateY(0); pointer-events: auto; }
+  .suggest-item {
+    padding: 10px 14px;
+    border-radius: 10px;
+    font-size: 14px;
+    color: var(--text-dim);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    transition: background 0.14s, color 0.14s;
+  }
+  .suggest-item .s-icon { font-size: 13px; opacity: 0.5; flex-shrink: 0; }
+  .suggest-item:hover, .suggest-item.highlight { background: rgba(255,255,255,0.1); color: var(--text); }
   .search-shell button {
     background: linear-gradient(135deg, var(--accent), var(--accent2));
     color: #fff; border: none; border-radius: 999px;
@@ -389,7 +425,10 @@
             <div class="cs-option" data-value="youtube">油管</div>
           </div>
         </div>
-        <input id="query" type="text" placeholder="搜索..." autofocus />
+        <div class="suggest-wrap">
+          <input id="query" type="text" placeholder="搜索..." autofocus autocomplete="off" />
+          <div class="suggest-list" id="suggestList"></div>
+        </div>
         <button id="go">搜索</button>
       </div>
       <div class="icon-btn" id="refreshBg" title="换一张壁纸">⟳</div>
@@ -509,6 +548,7 @@ csOptions.querySelectorAll(".cs-option").forEach(opt => {
     csOptions.querySelectorAll(".cs-option").forEach(o => o.classList.remove("selected"));
     opt.classList.add("selected");
     engineSelect.classList.remove("open");
+    if (typeof hideSuggest === "function") hideSuggest();
   });
 });
 document.addEventListener("click", () => engineSelect.classList.remove("open"));
@@ -606,14 +646,100 @@ document.getElementById("pwConfirm").onclick = async () => {
   }
 };
 
-/* ---------- 搜索 ---------- */
+/* ---------- 搜索 + 搜索提示 ---------- */
+const queryInput = document.getElementById("query");
+const suggestList = document.getElementById("suggestList");
+let suggestTimer = null;
+let suggestItems = [];
+let highlightIndex = -1;
+
 document.getElementById("go").onclick = doSearch;
-document.getElementById("query").addEventListener("keydown", e => { if (e.key === "Enter") doSearch(); });
-function doSearch() {
-  const q = document.getElementById("query").value.trim();
+
+function doSearch(text) {
+  const q = (text !== undefined ? text : queryInput.value).trim();
   if (!q) { showToast("请输入搜索内容"); return; }
+  hideSuggest();
   window.open(SEARCH_ENGINES[currentEngine](q), "_blank");
 }
+
+async function fetchSuggestions(q) {
+  try {
+    const res = await fetch(`${API_BASE}/api/suggest?engine=${currentEngine}&q=${encodeURIComponent(q)}`);
+    const data = await res.json();
+    return data.ok ? (data.suggestions || []) : [];
+  } catch (e) {
+    return [];
+  }
+}
+
+function renderSuggest(list) {
+  suggestItems = list;
+  highlightIndex = -1;
+  if (!list.length) { hideSuggest(); return; }
+  suggestList.innerHTML = list
+    .map((s, i) => `<div class="suggest-item" data-idx="${i}"><span class="s-icon">⌕</span><span>${escapeHtml(s)}</span></div>`)
+    .join("");
+  suggestList.querySelectorAll(".suggest-item").forEach(el => {
+    el.addEventListener("click", () => {
+      const idx = parseInt(el.dataset.idx, 10);
+      queryInput.value = suggestItems[idx];
+      doSearch(suggestItems[idx]);
+    });
+  });
+  suggestList.classList.add("show");
+}
+
+function hideSuggest() {
+  suggestList.classList.remove("show");
+  suggestItems = [];
+  highlightIndex = -1;
+}
+
+function updateHighlight() {
+  suggestList.querySelectorAll(".suggest-item").forEach((el, i) => {
+    el.classList.toggle("highlight", i === highlightIndex);
+  });
+}
+
+queryInput.addEventListener("input", () => {
+  const q = queryInput.value.trim();
+  clearTimeout(suggestTimer);
+  if (!q) { hideSuggest(); return; }
+  suggestTimer = setTimeout(async () => {
+    const list = await fetchSuggestions(q);
+    renderSuggest(list);
+  }, 220);
+});
+
+queryInput.addEventListener("keydown", e => {
+  if (suggestItems.length && suggestList.classList.contains("show")) {
+    if (e.key === "ArrowDown") {
+      e.preventDefault();
+      highlightIndex = (highlightIndex + 1) % suggestItems.length;
+      updateHighlight();
+      return;
+    }
+    if (e.key === "ArrowUp") {
+      e.preventDefault();
+      highlightIndex = (highlightIndex - 1 + suggestItems.length) % suggestItems.length;
+      updateHighlight();
+      return;
+    }
+    if (e.key === "Escape") { hideSuggest(); return; }
+  }
+  if (e.key === "Enter") {
+    if (highlightIndex >= 0 && suggestItems[highlightIndex]) {
+      queryInput.value = suggestItems[highlightIndex];
+      doSearch(suggestItems[highlightIndex]);
+    } else {
+      doSearch();
+    }
+  }
+});
+
+document.addEventListener("click", (e) => {
+  if (!e.target.closest(".suggest-wrap")) hideSuggest();
+});
 
 /* ---------- 书签数据 + 分类 ---------- */
 let bookmarks = [];
