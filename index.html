@@ -58,8 +58,8 @@
     top: 32px;
     overflow-y: auto;
   }
-  .sidebar::-webkit-scrollbar { width: 5px; }
-  .sidebar::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 3px; }
+  .sidebar::-webkit-scrollbar { width: 0; height: 0; display: none; }
+  .sidebar { scrollbar-width: none; -ms-overflow-style: none; }
   .sidebar h2 {
     font-size: 15px; font-weight: 600; margin: 0 0 18px 6px;
     color: var(--text); letter-spacing: 0.5px;
@@ -87,7 +87,7 @@
   /* -------- Main -------- */
   .main { flex: 1; min-width: 0; }
 
-  .topbar { display: flex; align-items: center; gap: 14px; margin-bottom: 34px; }
+  .topbar { display: flex; align-items: center; gap: 14px; margin-bottom: 34px; position: relative; z-index: 60; }
 
   .search-shell {
     flex: 1; display: flex; align-items: center;
@@ -98,6 +98,8 @@
     border-radius: 999px;
     padding: 6px 8px 6px 8px;
     box-shadow: 0 8px 30px rgba(0,0,0,0.25);
+    position: relative;
+    z-index: 60;
   }
 
   /* ---- 自定义下拉（替代原生 select） ---- */
@@ -135,7 +137,7 @@
     transform: translateY(-8px);
     pointer-events: none;
     transition: opacity 0.18s ease, transform 0.18s ease;
-    z-index: 50;
+    z-index: 500;
   }
   .custom-select.open .cs-options {
     opacity: 1; transform: translateY(0); pointer-events: auto;
@@ -184,6 +186,39 @@
     flex-shrink: 0; white-space: nowrap;
   }
 
+  .bm-search-shell {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: var(--glass-bg);
+    border: 1px solid var(--glass-border);
+    backdrop-filter: blur(20px) saturate(140%);
+    -webkit-backdrop-filter: blur(20px) saturate(140%);
+    border-radius: 16px;
+    padding: 10px 16px;
+    margin-bottom: 22px;
+    max-width: 460px;
+  }
+  .bm-search-icon { font-size: 16px; color: var(--text-dim); flex-shrink: 0; }
+  .bm-search-shell input {
+    flex: 1;
+    background: transparent;
+    border: none;
+    outline: none;
+    color: var(--text);
+    font-size: 14px;
+  }
+  .bm-search-shell input::placeholder { color: var(--text-dim); }
+  .bm-search-clear {
+    cursor: pointer;
+    color: var(--text-dim);
+    font-size: 13px;
+    padding: 2px 6px;
+    border-radius: 6px;
+    transition: background 0.15s, color 0.15s;
+  }
+  .bm-search-clear:hover { background: rgba(255,255,255,0.1); color: var(--text); }
+
   .section-title {
     font-size: 13px; color: var(--text-dim); letter-spacing: 1px;
     margin: 0 0 16px 4px; text-transform: uppercase;
@@ -194,6 +229,8 @@
     grid-template-columns: repeat(auto-fill, minmax(128px, 1fr));
     gap: 18px;
     margin-bottom: 38px;
+    position: relative;
+    z-index: 1;
   }
   .bm-card {
     position: relative;
@@ -357,6 +394,12 @@
       </div>
       <div class="icon-btn" id="refreshBg" title="换一张壁纸">⟳</div>
       <button class="add-btn" id="addBtn">+ 添加书签</button>
+    </div>
+
+    <div class="bm-search-shell">
+      <span class="bm-search-icon">⌕</span>
+      <input id="bmSearch" type="text" placeholder="在当前分类中搜索书签标题 / 描述 / 标签..." />
+      <span class="bm-search-clear" id="bmSearchClear" style="display:none;">✕</span>
     </div>
 
     <div id="sectionTitle" class="section-title">全部书签</div>
@@ -575,6 +618,7 @@ function doSearch() {
 /* ---------- 书签数据 + 分类 ---------- */
 let bookmarks = [];
 let activeCategory = "__all__";
+let searchKeyword = "";
 
 async function loadBookmarks() {
   try {
@@ -625,14 +669,26 @@ function renderGrid() {
   const grid = document.getElementById("grid");
   const sectionTitle = document.getElementById("sectionTitle");
   let list = bookmarks;
+  let baseTitle = "全部书签";
   if (activeCategory === "__fav__") {
     list = bookmarks.filter(b => b.favorite);
-    sectionTitle.textContent = "★ 收藏";
+    baseTitle = "★ 收藏";
   } else if (activeCategory !== "__all__") {
     list = bookmarks.filter(b => (b.category || "未分类") === activeCategory);
-    sectionTitle.textContent = activeCategory;
+    baseTitle = activeCategory;
+  }
+
+  const kw = searchKeyword.trim().toLowerCase();
+  if (kw) {
+    list = list.filter(b => {
+      const title = (b.title || "").toLowerCase();
+      const desc = (b.desc || "").toLowerCase();
+      const tags = (b.tags || []).join(",").toLowerCase();
+      return title.includes(kw) || desc.includes(kw) || tags.includes(kw);
+    });
+    sectionTitle.textContent = `${baseTitle} · 搜索"${searchKeyword.trim()}"（${list.length} 条）`;
   } else {
-    sectionTitle.textContent = "全部书签";
+    sectionTitle.textContent = baseTitle;
   }
 
   grid.innerHTML = "";
@@ -736,6 +792,21 @@ document.getElementById("delConfirm").onclick = async () => {
     showToast("删除失败，请重试", "error");
   }
 };
+
+const bmSearchInput = document.getElementById("bmSearch");
+const bmSearchClear = document.getElementById("bmSearchClear");
+bmSearchInput.addEventListener("input", () => {
+  searchKeyword = bmSearchInput.value;
+  bmSearchClear.style.display = searchKeyword ? "inline-block" : "none";
+  renderGrid();
+});
+bmSearchClear.addEventListener("click", () => {
+  bmSearchInput.value = "";
+  searchKeyword = "";
+  bmSearchClear.style.display = "none";
+  renderGrid();
+  bmSearchInput.focus();
+});
 
 setWallpaper();
 loadBookmarks();
