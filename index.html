@@ -653,7 +653,7 @@ let suggestTimer = null;
 let suggestItems = [];
 let highlightIndex = -1;
 
-document.getElementById("go").onclick = doSearch;
+document.getElementById("go").onclick = () => doSearch();
 
 function doSearch(text) {
   const q = (text !== undefined ? text : queryInput.value).trim();
