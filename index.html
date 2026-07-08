@@ -221,26 +221,23 @@
         /* 搜索按钮 */
          .search-shell .go-btn {
   flex-shrink: 0;
-  width: var(--top-height);
-  height: var(--top-height);
-  border-radius: 50%;
-  background: var(--glass-bg);
-  border: 1px solid var(--glass-border);
-  backdrop-filter: blur(24px) saturate(150%);
-  -webkit-backdrop-filter: blur(24px) saturate(150%);
-  color: var(--text);
+  width: 36px;
+  height: 100%;
+  border-radius: 0;
+  background: transparent;
+  border: none;
+  color: var(--text-dim);
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  font-size: 17px;
-  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.2);
-  transition: background 0.2s, transform 0.2s, color 0.2s, box-shadow 0.2s;
-  margin-right: 2px;
+  font-size: 16px;
+  margin-right: 8px;
+  transition: color 0.2s, transform 0.15s;
 }
 .search-shell .go-btn:hover {
-  background: var(--glass-bg-strong);
-  transform: rotate(8deg);
+  color: var(--text);
+  transform: scale(1.1);
 }
 
         /* ---- 搜索提示 ---- */
