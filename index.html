@@ -3,6 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <title>我的书签</title>
+<script src="https://code.iconify.design/iconify-icon/2.1.0/iconify-icon.min.js"></script>
 <style>
   :root {
     --glass-bg: rgba(255, 255, 255, 0.08);
@@ -39,58 +40,17 @@
   .layout {
     display: flex;
     min-height: 100vh;
-    padding: 32px;
-    gap: 28px;
+    padding: 32px 32px 130px;
   }
-  /* -------- Sidebar -------- */
-  .sidebar {
-    width: 230px;
-    flex-shrink: 0;
-    background: var(--glass-bg);
-    border: 1px solid var(--glass-border);
-    backdrop-filter: blur(22px) saturate(140%);
-    -webkit-backdrop-filter: blur(22px) saturate(140%);
-    border-radius: var(--radius-lg);
-    padding: 26px 18px;
-    box-shadow: 0 8px 32px rgba(0,0,0,0.25);
-    height: calc(100vh - 64px);
-    position: sticky;
-    top: 32px;
-    overflow-y: auto;
-  }
-  .sidebar::-webkit-scrollbar { width: 0; height: 0; display: none; }
-  .sidebar { scrollbar-width: none; -ms-overflow-style: none; }
-  .sidebar h2 {
-    font-size: 15px; font-weight: 600; margin: 0 0 18px 6px;
-    color: var(--text); letter-spacing: 0.5px;
-  }
-  .cat-item {
-    display: flex; justify-content: space-between; align-items: center;
-    padding: 11px 14px; margin-bottom: 4px;
-    border-radius: var(--radius-sm); cursor: pointer;
-    font-size: 14px; color: var(--text-dim);
-    transition: all 0.2s ease;
-  }
-  .cat-item:hover { background: rgba(255,255,255,0.08); color: var(--text); }
-  .cat-item.active {
-    background: linear-gradient(135deg, var(--accent), var(--accent2));
-    color: #fff;
-    box-shadow: 0 4px 18px var(--accent-glow);
-  }
-  .cat-count {
-    font-size: 11px; opacity: 0.75;
-    background: rgba(255,255,255,0.12);
-    padding: 1px 8px; border-radius: 10px;
-  }
-  .cat-item.active .cat-count { background: rgba(255,255,255,0.25); }
-
-  /* -------- Main -------- */
   .main { flex: 1; min-width: 0; }
 
-  .topbar { display: flex; align-items: center; gap: 14px; margin-bottom: 34px; position: relative; z-index: 60; }
+  /* -------- Topbar -------- */
+  .topbar { display: flex; align-items: center; gap: 12px; margin-bottom: 22px; position: relative; z-index: 60; flex-wrap: wrap; }
 
   .search-shell {
-    flex: 1; display: flex; align-items: center;
+    flex: 0 0 auto;
+    width: 340px;
+    display: flex; align-items: center;
     background: var(--glass-bg);
     border: 1px solid var(--glass-border);
     backdrop-filter: blur(24px) saturate(150%);
@@ -103,23 +63,20 @@
   }
 
   /* ---- 自定义下拉（替代原生 select） ---- */
-  .custom-select {
-    position: relative;
-    flex-shrink: 0;
-  }
+  .custom-select { position: relative; flex-shrink: 0; }
   .cs-trigger {
-    display: flex; align-items: center; gap: 8px;
-    padding: 10px 16px;
+    display: flex; align-items: center; gap: 6px;
+    padding: 10px 12px;
     border-radius: 999px;
     cursor: pointer;
-    font-size: 14.5px;
+    font-size: 14px;
     color: var(--text);
     user-select: none;
     transition: background 0.2s;
     white-space: nowrap;
   }
   .cs-trigger:hover { background: rgba(255,255,255,0.08); }
-  .cs-trigger .arrow { font-size: 10px; opacity: 0.6; transition: transform 0.2s; }
+  .cs-trigger .arrow { font-size: 12px; opacity: 0.6; transition: transform 0.2s; display: flex; }
   .custom-select.open .cs-trigger .arrow { transform: rotate(180deg); }
   .cs-options {
     position: absolute;
@@ -154,12 +111,12 @@
   .cs-option.selected { background: linear-gradient(135deg, var(--accent), var(--accent2)); color: #fff; }
 
   .search-shell input {
-    flex: 1; background: transparent; border: none; outline: none;
-    color: var(--text); font-size: 16px; padding: 12px 6px;
+    flex: 1; min-width: 0; background: transparent; border: none; outline: none;
+    color: var(--text); font-size: 14.5px; padding: 12px 6px;
   }
   .search-shell input::placeholder { color: var(--text-dim); }
 
-  .suggest-wrap { position: relative; flex: 1; }
+  .suggest-wrap { position: relative; flex: 1; min-width: 0; }
   .suggest-list {
     position: absolute;
     top: calc(100% + 12px);
@@ -192,37 +149,22 @@
     gap: 10px;
     transition: background 0.14s, color 0.14s;
   }
-  .suggest-item .s-icon { font-size: 13px; opacity: 0.5; flex-shrink: 0; }
+  .suggest-item .s-icon { font-size: 13px; opacity: 0.5; flex-shrink: 0; display: flex; }
   .suggest-item:hover, .suggest-item.highlight { background: rgba(255,255,255,0.1); color: var(--text); }
   .search-shell button {
     background: linear-gradient(135deg, var(--accent), var(--accent2));
-    color: #fff; border: none; border-radius: 999px;
-    padding: 11px 26px; cursor: pointer; font-size: 14.5px; font-weight: 500;
+    color: #fff; border: none; border-radius: 50%;
+    width: 40px; height: 40px; flex-shrink: 0;
+    cursor: pointer; font-size: 16px;
+    display: flex; align-items: center; justify-content: center;
     box-shadow: 0 4px 16px var(--accent-glow);
     transition: transform 0.15s;
   }
   .search-shell button:hover { transform: translateY(-1px); }
 
-  .icon-btn {
-    width: 46px; height: 46px; border-radius: 50%;
-    background: var(--glass-bg);
-    border: 1px solid var(--glass-border);
-    backdrop-filter: blur(24px);
-    display: flex; align-items: center; justify-content: center;
-    cursor: pointer; font-size: 18px; flex-shrink: 0;
-    transition: background 0.2s, transform 0.2s;
-  }
-  .icon-btn:hover { background: var(--glass-bg-strong); transform: rotate(15deg); }
-
-  .add-btn {
-    background: linear-gradient(135deg, var(--accent), var(--accent2));
-    border: none; color: #fff; border-radius: 999px;
-    padding: 13px 24px; font-size: 14.5px; font-weight: 500;
-    cursor: pointer; box-shadow: 0 4px 16px var(--accent-glow);
-    flex-shrink: 0; white-space: nowrap;
-  }
-
   .bm-search-shell {
+    flex: 1;
+    min-width: 220px;
     display: flex;
     align-items: center;
     gap: 10px;
@@ -230,12 +172,10 @@
     border: 1px solid var(--glass-border);
     backdrop-filter: blur(20px) saturate(140%);
     -webkit-backdrop-filter: blur(20px) saturate(140%);
-    border-radius: 16px;
-    padding: 10px 16px;
-    margin-bottom: 22px;
-    max-width: 460px;
+    border-radius: 999px;
+    padding: 12px 18px;
   }
-  .bm-search-icon { font-size: 16px; color: var(--text-dim); flex-shrink: 0; }
+  .bm-search-icon { font-size: 16px; color: var(--text-dim); flex-shrink: 0; display: flex; }
   .bm-search-shell input {
     flex: 1;
     background: transparent;
@@ -249,11 +189,61 @@
     cursor: pointer;
     color: var(--text-dim);
     font-size: 13px;
-    padding: 2px 6px;
+    padding: 4px;
     border-radius: 6px;
+    display: flex;
     transition: background 0.15s, color 0.15s;
   }
   .bm-search-clear:hover { background: rgba(255,255,255,0.1); color: var(--text); }
+
+  .icon-btn {
+    width: 46px; height: 46px; border-radius: 50%;
+    background: var(--glass-bg);
+    border: 1px solid var(--glass-border);
+    backdrop-filter: blur(24px);
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer; font-size: 19px; flex-shrink: 0;
+    transition: background 0.2s, transform 0.2s, color 0.2s;
+  }
+  .icon-btn:hover { background: var(--glass-bg-strong); transform: rotate(15deg); }
+  #settingsBtn.active {
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    color: #fff;
+    box-shadow: 0 4px 16px var(--accent-glow);
+  }
+  #settingsBtn.active:hover { transform: rotate(90deg); }
+
+  .add-btn {
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    border: none; color: #fff; border-radius: 999px;
+    padding: 13px 22px; font-size: 14.5px; font-weight: 500;
+    cursor: pointer; box-shadow: 0 4px 16px var(--accent-glow);
+    flex-shrink: 0; white-space: nowrap;
+    display: flex; align-items: center; gap: 6px;
+  }
+
+  /* -------- Beijing time card -------- */
+  .bj-time-card {
+    display: flex; align-items: center; gap: 16px;
+    background: var(--glass-bg);
+    border: 1px solid var(--glass-border);
+    backdrop-filter: blur(22px) saturate(140%);
+    -webkit-backdrop-filter: blur(22px) saturate(140%);
+    border-radius: var(--radius-md);
+    padding: 18px 24px;
+    margin-bottom: 26px;
+    box-shadow: 0 8px 28px rgba(0,0,0,0.2);
+    max-width: 420px;
+  }
+  .bj-time-icon {
+    font-size: 30px;
+    color: var(--accent);
+    flex-shrink: 0;
+    filter: drop-shadow(0 0 10px var(--accent-glow));
+  }
+  .bj-time-info { display: flex; flex-direction: column; gap: 2px; }
+  .bj-time { font-size: 24px; font-weight: 600; letter-spacing: 1px; font-variant-numeric: tabular-nums; }
+  .bj-date { font-size: 12.5px; color: var(--text-dim); display: flex; align-items: center; gap: 6px; }
 
   .section-title {
     font-size: 13px; color: var(--text-dim); letter-spacing: 1px;
@@ -264,27 +254,35 @@
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(128px, 1fr));
     gap: 18px;
-    margin-bottom: 38px;
+    margin-bottom: 20px;
     position: relative;
     z-index: 1;
   }
   .bm-card {
     position: relative;
-    background: var(--glass-bg);
-    border: 1px solid var(--glass-border);
-    backdrop-filter: blur(18px) saturate(140%);
-    -webkit-backdrop-filter: blur(18px) saturate(140%);
+    background: transparent;
+    border: 1px solid transparent;
     border-radius: var(--radius-md);
     padding: 20px 10px 14px;
     display: flex; flex-direction: column; align-items: center; text-align: center;
     cursor: pointer;
-    transition: transform 0.2s ease, background 0.2s ease, box-shadow 0.2s ease;
+    transition: transform 0.2s ease, background 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
     text-decoration: none; color: var(--text);
   }
   .bm-card:hover {
     transform: translateY(-5px);
-    background: var(--glass-bg-strong);
+    background: var(--glass-bg);
+    border-color: var(--glass-border);
+    backdrop-filter: blur(18px) saturate(140%);
+    -webkit-backdrop-filter: blur(18px) saturate(140%);
     box-shadow: 0 12px 28px rgba(0,0,0,0.3);
+  }
+  .bm-card.edit-mode {
+    background: var(--glass-bg);
+    border-color: var(--glass-border);
+    backdrop-filter: blur(18px) saturate(140%);
+    -webkit-backdrop-filter: blur(18px) saturate(140%);
+    box-shadow: 0 8px 22px rgba(0,0,0,0.22);
   }
   .bm-icon {
     width: 52px; height: 52px; border-radius: 50%;
@@ -302,17 +300,67 @@
   .bm-actions {
     position: absolute; top: 8px; right: 8px; display: none; gap: 5px;
   }
-  .bm-card:hover .bm-actions { display: flex; }
+  .bm-card.edit-mode .bm-actions { display: flex; }
   .bm-actions span {
     background: rgba(0,0,0,0.45); backdrop-filter: blur(6px);
-    border-radius: 8px; width: 22px; height: 22px;
-    display: flex; align-items: center; justify-content: center; font-size: 12px;
+    border-radius: 8px; width: 24px; height: 24px;
+    display: flex; align-items: center; justify-content: center; font-size: 13px;
+    transition: background 0.15s, color 0.15s;
   }
+  .bm-actions span:hover { background: var(--accent); color: #fff; }
+  .bm-actions span[data-act="del"]:hover { background: var(--danger); }
   .fav-badge {
-    position: absolute; top: 8px; left: 10px; color: #ffd24f; font-size: 13px;
-    filter: drop-shadow(0 1px 3px rgba(0,0,0,0.4));
+    position: absolute; top: 8px; left: 10px; color: #ffd24f; font-size: 14px;
+    filter: drop-shadow(0 1px 3px rgba(0,0,0,0.4)); display: flex;
   }
   .empty-tip { text-align: center; color: var(--text-dim); margin-top: 60px; font-size: 14px; }
+
+  /* -------- Category banner (moved to bottom, floating dock) -------- */
+  .cat-banner-dock {
+    position: fixed;
+    left: 50%;
+    bottom: 22px;
+    transform: translateX(-50%);
+    z-index: 80;
+    max-width: calc(100vw - 48px);
+  }
+  .cat-banner {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(24, 26, 34, 0.55);
+    border: 1px solid var(--glass-border);
+    backdrop-filter: blur(28px) saturate(160%);
+    -webkit-backdrop-filter: blur(28px) saturate(160%);
+    border-radius: 999px;
+    padding: 8px;
+    box-shadow: 0 14px 40px rgba(0,0,0,0.4);
+    overflow-x: auto;
+    max-width: 100%;
+    scrollbar-width: none;
+  }
+  .cat-banner::-webkit-scrollbar { display: none; }
+  .cat-item {
+    display: flex; align-items: center; gap: 7px;
+    padding: 10px 16px;
+    border-radius: 999px; cursor: pointer;
+    font-size: 13.5px; color: var(--text-dim);
+    white-space: nowrap; flex-shrink: 0;
+    transition: all 0.2s ease;
+  }
+  .cat-item iconify-icon { font-size: 15px; display: flex; }
+  .cat-item:hover { background: rgba(255,255,255,0.08); color: var(--text); }
+  .cat-item.active {
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    color: #fff;
+    box-shadow: 0 4px 18px var(--accent-glow);
+  }
+  .cat-count {
+    font-size: 11px; opacity: 0.75;
+    background: rgba(255,255,255,0.12);
+    padding: 1px 8px; border-radius: 10px;
+  }
+  .cat-item.active .cat-count { background: rgba(255,255,255,0.25); }
 
   /* -------- Modal -------- */
   .overlay {
@@ -337,7 +385,7 @@
     from { opacity: 0; transform: translateY(14px) scale(0.97); }
     to   { opacity: 1; transform: translateY(0) scale(1); }
   }
-  .modal h3 { margin: 0 0 20px; font-size: 18px; font-weight: 600; }
+  .modal h3 { margin: 0 0 20px; font-size: 18px; font-weight: 600; display: flex; align-items: center; gap: 8px; }
   .modal label { font-size: 12.5px; color: var(--text-dim); display: block; margin: 12px 0 5px; }
   .modal input, .modal textarea {
     width: 100%;
@@ -354,6 +402,7 @@
   .modal .btns { display: flex; justify-content: flex-end; gap: 10px; margin-top: 24px; }
   .modal .btns button {
     border: none; border-radius: 10px; padding: 9px 20px; cursor: pointer; font-size: 14px; font-weight: 500;
+    display: flex; align-items: center; gap: 6px;
   }
   .btn-primary { background: linear-gradient(135deg, var(--accent), var(--accent2)); color: #fff; box-shadow: 0 4px 16px var(--accent-glow); }
   .btn-secondary { background: rgba(255,255,255,0.08); color: var(--text); }
@@ -389,11 +438,16 @@
   }
   .toast.success { border-left-color: #5ee6a0; }
   .toast.error { border-left-color: var(--danger); }
-  .toast .t-icon { font-size: 15px; margin-top: 1px; }
+  .toast .t-icon { font-size: 17px; margin-top: 1px; display: flex; }
   .toast .t-msg { flex: 1; line-height: 1.4; }
   .toast.hide { animation: toastOut 0.25s ease forwards; }
   @keyframes toastIn { from { opacity: 0; transform: translateX(30px); } to { opacity: 1; transform: translateX(0); } }
   @keyframes toastOut { to { opacity: 0; transform: translateX(30px); } }
+
+  @media (max-width: 720px) {
+    .topbar { flex-direction: column; align-items: stretch; }
+    .search-shell, .bm-search-shell { width: 100%; }
+  }
 </style>
 </head>
 <body>
@@ -403,18 +457,13 @@
 <div id="toastWrap"></div>
 
 <div class="layout">
-  <div class="sidebar">
-    <h2>分类</h2>
-    <div id="catList"></div>
-  </div>
-
   <div class="main">
     <div class="topbar">
       <div class="search-shell">
         <div class="custom-select" id="engineSelect">
           <div class="cs-trigger" id="csTrigger">
             <span id="csLabel">谷歌</span>
-            <span class="arrow">▼</span>
+            <span class="arrow"><iconify-icon icon="ph:caret-down-bold"></iconify-icon></span>
           </div>
           <div class="cs-options" id="csOptions">
             <div class="cs-option selected" data-value="google">谷歌</div>
@@ -429,16 +478,26 @@
           <input id="query" type="text" placeholder="搜索..." autofocus autocomplete="off" />
           <div class="suggest-list" id="suggestList"></div>
         </div>
-        <button id="go">搜索</button>
+        <button id="go"><iconify-icon icon="ph:magnifying-glass-bold"></iconify-icon></button>
       </div>
-      <div class="icon-btn" id="refreshBg" title="换一张壁纸">⟳</div>
-      <button class="add-btn" id="addBtn">+ 添加书签</button>
+
+      <div class="bm-search-shell">
+        <iconify-icon icon="ph:funnel-bold" class="bm-search-icon"></iconify-icon>
+        <input id="bmSearch" type="text" placeholder="在当前分类中搜索书签标题 / 描述 / 标签..." />
+        <iconify-icon icon="ph:x-bold" class="bm-search-clear" id="bmSearchClear" style="display:none;"></iconify-icon>
+      </div>
+
+      <div class="icon-btn" id="refreshBg" title="换一张壁纸"><iconify-icon icon="ph:arrows-clockwise-bold"></iconify-icon></div>
+      <div class="icon-btn" id="settingsBtn" title="编辑模式"><iconify-icon icon="ph:gear-six-bold"></iconify-icon></div>
+      <button class="add-btn" id="addBtn"><iconify-icon icon="ph:plus-bold"></iconify-icon>添加书签</button>
     </div>
 
-    <div class="bm-search-shell">
-      <span class="bm-search-icon">⌕</span>
-      <input id="bmSearch" type="text" placeholder="在当前分类中搜索书签标题 / 描述 / 标签..." />
-      <span class="bm-search-clear" id="bmSearchClear" style="display:none;">✕</span>
+    <div class="bj-time-card" id="bjTimeCard">
+      <iconify-icon icon="ph:clock-bold" class="bj-time-icon"></iconify-icon>
+      <div class="bj-time-info">
+        <div class="bj-time" id="bjTime">--:--:--</div>
+        <div class="bj-date"><iconify-icon icon="ph:calendar-blank-bold"></iconify-icon><span id="bjDate">加载中...</span></div>
+      </div>
     </div>
 
     <div id="sectionTitle" class="section-title">全部书签</div>
@@ -447,10 +506,14 @@
   </div>
 </div>
 
+<div class="cat-banner-dock">
+  <div class="cat-banner" id="catList"></div>
+</div>
+
 <!-- 密码输入弹窗 -->
 <div class="overlay" id="pwOverlay">
   <div class="modal">
-    <h3>请输入密码</h3>
+    <h3><iconify-icon icon="ph:lock-key-bold"></iconify-icon>请输入密码</h3>
     <label>管理密码</label>
     <input type="password" id="pwInput" placeholder="输入密码以增删改" />
     <div class="btns">
@@ -463,7 +526,7 @@
 <!-- 新增/编辑书签弹窗 -->
 <div class="overlay" id="editOverlay">
   <div class="modal">
-    <h3 id="editTitle">添加书签</h3>
+    <h3 id="editTitle"><iconify-icon icon="ph:bookmark-simple-bold"></iconify-icon>添加书签</h3>
     <label>标题</label>
     <input id="f-title" type="text" />
     <label>URL</label>
@@ -488,7 +551,7 @@
 <!-- 删除确认弹窗 -->
 <div class="overlay" id="delOverlay">
   <div class="modal">
-    <h3>确定删除吗？</h3>
+    <h3><iconify-icon icon="ph:warning-bold"></iconify-icon>确定删除吗？</h3>
     <p style="color:var(--text-dim); font-size:13.5px; margin:0;">此操作无法撤销，删除后该书签会从 Redis 中永久移除。</p>
     <div class="btns">
       <button class="btn-secondary" id="delCancel">取消</button>
@@ -521,14 +584,25 @@ function showToast(msg, type = "info") {
   const wrap = document.getElementById("toastWrap");
   const el = document.createElement("div");
   el.className = `toast ${type}`;
-  const icon = type === "success" ? "✓" : type === "error" ? "✕" : "ℹ";
-  el.innerHTML = `<span class="t-icon">${icon}</span><span class="t-msg">${msg}</span>`;
+  const icon = type === "success" ? "ph:check-circle-bold" : type === "error" ? "ph:x-circle-bold" : "ph:info-bold";
+  el.innerHTML = `<iconify-icon class="t-icon" icon="${icon}"></iconify-icon><span class="t-msg">${msg}</span>`;
   wrap.appendChild(el);
   setTimeout(() => {
     el.classList.add("hide");
     setTimeout(() => el.remove(), 260);
   }, 3200);
 }
+
+/* ---------- 北京时间日期卡片 ---------- */
+function updateBjTime() {
+  const now = new Date();
+  const timeStr = now.toLocaleTimeString("zh-CN", { timeZone: "Asia/Shanghai", hour12: false });
+  const dateStr = now.toLocaleDateString("zh-CN", { timeZone: "Asia/Shanghai", year: "numeric", month: "long", day: "numeric", weekday: "long" });
+  document.getElementById("bjTime").textContent = timeStr;
+  document.getElementById("bjDate").textContent = `北京时间 · ${dateStr}`;
+}
+updateBjTime();
+setInterval(updateBjTime, 1000);
 
 /* ---------- 自定义下拉 ---------- */
 const engineSelect = document.getElementById("engineSelect");
@@ -568,7 +642,7 @@ async function fetchRandomWallpaper() {
     if (!data.ok || !data.proxyUrl) throw new Error("no url");
     return API_BASE + data.proxyUrl;
   } catch (e) {
-    return "https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?q=80&w=1920";
+    return "https://images.unsplash.com/photo-1.544716278e+09-ca5e3f4abd8c?q=80&w=1920";
   }
 }
 async function setWallpaper(force = false) {
@@ -646,6 +720,19 @@ document.getElementById("pwConfirm").onclick = async () => {
   }
 };
 
+/* ---------- 编辑模式（设置按钮控制）---------- */
+let editMode = false;
+const settingsBtn = document.getElementById("settingsBtn");
+settingsBtn.addEventListener("click", () => {
+  requirePassword(() => {
+    editMode = !editMode;
+    settingsBtn.classList.toggle("active", editMode);
+    settingsBtn.setAttribute("title", editMode ? "退出编辑模式" : "编辑模式");
+    showToast(editMode ? "已进入编辑模式" : "已退出编辑模式", "info");
+    renderGrid();
+  });
+});
+
 /* ---------- 搜索 + 搜索提示 ---------- */
 const queryInput = document.getElementById("query");
 const suggestList = document.getElementById("suggestList");
@@ -677,7 +764,7 @@ function renderSuggest(list) {
   highlightIndex = -1;
   if (!list.length) { hideSuggest(); return; }
   suggestList.innerHTML = list
-    .map((s, i) => `<div class="suggest-item" data-idx="${i}"><span class="s-icon">⌕</span><span>${escapeHtml(s)}</span></div>`)
+    .map((s, i) => `<div class="suggest-item" data-idx="${i}"><iconify-icon class="s-icon" icon="ph:magnifying-glass-bold"></iconify-icon><span>${escapeHtml(s)}</span></div>`)
     .join("");
   suggestList.querySelectorAll(".suggest-item").forEach(el => {
     el.addEventListener("click", () => {
@@ -755,7 +842,7 @@ async function loadBookmarks() {
     bookmarks = [];
     showToast("加载书签失败，请检查网络或接口地址", "error");
   }
-  renderSidebar();
+  renderCatBanner();
   renderGrid();
 }
 
@@ -768,23 +855,23 @@ function getCategoryCounts() {
   return map;
 }
 
-function renderSidebar() {
+function renderCatBanner() {
   const counts = getCategoryCounts();
   const catList = document.getElementById("catList");
   const cats = Object.keys(counts).sort((a, b) => counts[b] - counts[a]);
   let html = `<div class="cat-item ${activeCategory === '__all__' ? 'active' : ''}" data-cat="__all__">
-      <span>全部</span><span class="cat-count">${bookmarks.length}</span></div>`;
+      <iconify-icon icon="ph:squares-four-bold"></iconify-icon><span>全部</span><span class="cat-count">${bookmarks.length}</span></div>`;
   html += `<div class="cat-item ${activeCategory === '__fav__' ? 'active' : ''}" data-cat="__fav__">
-      <span>★ 收藏</span><span class="cat-count">${bookmarks.filter(b=>b.favorite).length}</span></div>`;
+      <iconify-icon icon="ph:star-fill"></iconify-icon><span>收藏</span><span class="cat-count">${bookmarks.filter(b=>b.favorite).length}</span></div>`;
   cats.forEach(cat => {
     html += `<div class="cat-item ${activeCategory === cat ? 'active' : ''}" data-cat="${escapeHtml(cat)}">
-        <span>${escapeHtml(cat)}</span><span class="cat-count">${counts[cat]}</span></div>`;
+        <iconify-icon icon="ph:folder-simple-bold"></iconify-icon><span>${escapeHtml(cat)}</span><span class="cat-count">${counts[cat]}</span></div>`;
   });
   catList.innerHTML = html;
   catList.querySelectorAll(".cat-item").forEach(el => {
     el.addEventListener("click", () => {
       activeCategory = el.dataset.cat;
-      renderSidebar();
+      renderCatBanner();
       renderGrid();
       window.scrollTo({ top: 0, behavior: "smooth" });
     });
@@ -824,14 +911,14 @@ function renderGrid() {
     .sort((a, b) => (b.favorite - a.favorite))
     .forEach(bm => {
       const card = document.createElement("a");
-      card.className = "bm-card";
+      card.className = "bm-card" + (editMode ? " edit-mode" : "");
       card.href = bm.url;
       card.target = "_blank";
       card.innerHTML = `
-        ${bm.favorite ? '<span class="fav-badge">★</span>' : ""}
+        ${bm.favorite ? '<iconify-icon class="fav-badge" icon="ph:star-fill"></iconify-icon>' : ""}
         <span class="bm-actions">
-          <span data-act="edit">✎</span>
-          <span data-act="del">✕</span>
+          <span data-act="edit"><iconify-icon icon="ph:pencil-simple-bold"></iconify-icon></span>
+          <span data-act="del"><iconify-icon icon="ph:trash-bold"></iconify-icon></span>
         </span>
         <div class="bm-icon"><img src="${favicon(bm.url)}" onerror="this.style.display='none'"/></div>
         <div class="bm-title">${escapeHtml(bm.title || bm.url)}</div>
@@ -860,7 +947,9 @@ let editingId = null;
 
 function openEditModal(bm) {
   editingId = bm ? bm.id : null;
-  document.getElementById("editTitle").textContent = bm ? "编辑书签" : "添加书签";
+  document.getElementById("editTitle").innerHTML = bm
+    ? '<iconify-icon icon="ph:pencil-simple-bold"></iconify-icon>编辑书签'
+    : '<iconify-icon icon="ph:bookmark-simple-bold"></iconify-icon>添加书签';
   document.getElementById("f-title").value = bm ? bm.title : "";
   document.getElementById("f-url").value = bm ? bm.url : "";
   document.getElementById("f-category").value = bm ? bm.category : "";
@@ -923,7 +1012,7 @@ const bmSearchInput = document.getElementById("bmSearch");
 const bmSearchClear = document.getElementById("bmSearchClear");
 bmSearchInput.addEventListener("input", () => {
   searchKeyword = bmSearchInput.value;
-  bmSearchClear.style.display = searchKeyword ? "inline-block" : "none";
+  bmSearchClear.style.display = searchKeyword ? "flex" : "none";
   renderGrid();
 });
 bmSearchClear.addEventListener("click", () => {
