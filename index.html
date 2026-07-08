@@ -981,12 +981,13 @@
             return d.innerHTML;
         }
 
-        function favicon(url) {
-            try {
-                const u = new URL(url);
-                return `https://www.google.com/s2/favicons?sz=64&domain=${u.hostname}`;
-            } catch (e) { return ""; }
-        }
+         function favicon(url) {
+    try {
+        const u = new URL(url);
+        // 不再直连谷歌，而是走自己的 Worker 代理，把目标站点的 hostname 传过去
+        return `${API_BASE}/api/favicon?url=${encodeURIComponent(u.hostname)}`;
+    } catch (e) { return ""; }
+}
 
         function showToast(msg, type = "info") {
             const wrap = document.getElementById("toastWrap");
