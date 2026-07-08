@@ -3,6 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <title>我的书签</title>
+<link rel="icon" href="https://api.iconify.design/lucide:bookmark-check.svg?color=%237aa2ff" type="image/svg+xml">
 <script src="https://code.iconify.design/3/3.1.0/iconify.min.js"></script>
 <style>
   :root {
@@ -32,7 +33,6 @@
     -ms-overflow-style: none;
   }
 
-  /* 核心布局变更：整体固定，禁止 body 滚动 */
   html, body {
     margin: 0;
     height: 100vh;
@@ -59,7 +59,7 @@
     gap: 28px;
   }
   
-  /* -------- Sidebar (固定高度，内部滚动) -------- */
+  /* -------- Sidebar -------- */
   .sidebar {
     width: 180px;
     flex-shrink: 0;
@@ -98,7 +98,7 @@
   }
   .cat-item.active .cat-count { background: rgba(255,255,255,0.25); }
 
-  /* -------- Main Area (纵向 Flex，头部固定) -------- */
+  /* -------- Main Area -------- */
   .main { 
     flex: 1; 
     display: flex;
@@ -109,18 +109,18 @@
 
   .topbar { 
     display: flex; align-items: center; gap: 14px; 
-    margin-bottom: 34px; position: relative; z-index: 60;
+    margin-bottom: 24px; position: relative; z-index: 60;
     flex-shrink: 0; 
   }
 
   .search-shell {
-    flex: 1; display: flex; align-items: center;
+    flex: 1.5; display: flex; align-items: center; /* 增加权重，让搜索引擎更长 */
     background: var(--glass-bg);
     border: 1px solid var(--glass-border);
     backdrop-filter: blur(24px) saturate(150%);
     -webkit-backdrop-filter: blur(24px) saturate(150%);
     border-radius: 999px;
-    padding: 6px 8px 6px 8px;
+    padding: 5px 6px 5px 6px;
     box-shadow: 0 8px 30px rgba(0,0,0,0.25);
     position: relative;
     z-index: 60;
@@ -128,16 +128,17 @@
 
   .custom-select { position: relative; flex-shrink: 0; }
   .cs-trigger {
-    display: flex; align-items: center; gap: 8px;
-    padding: 10px 16px; border-radius: 999px; cursor: pointer;
-    font-size: 14.5px; color: var(--text); user-select: none;
+    display: flex; align-items: center; gap: 6px;
+    padding: 8px 12px; /* 调短UI */
+    border-radius: 999px; cursor: pointer;
+    font-size: 13.5px; color: var(--text); user-select: none;
     transition: background 0.2s; white-space: nowrap;
   }
   .cs-trigger:hover { background: rgba(255,255,255,0.08); }
-  .cs-trigger .arrow { font-size: 14px; opacity: 0.6; transition: transform 0.2s; display: flex; align-items: center;}
+  .cs-trigger .arrow { font-size: 13px; opacity: 0.6; transition: transform 0.2s; display: flex; align-items: center;}
   .custom-select.open .cs-trigger .arrow { transform: rotate(180deg); }
   .cs-options {
-    position: absolute; top: calc(100% + 10px); left: 0; min-width: 130px;
+    position: absolute; top: calc(100% + 10px); left: 0; min-width: 110px;
     background: rgba(28, 30, 40, 0.85); border: 1px solid var(--glass-border);
     backdrop-filter: blur(26px) saturate(160%); border-radius: 16px;
     padding: 8px; box-shadow: 0 16px 40px rgba(0,0,0,0.4);
@@ -146,7 +147,7 @@
   }
   .custom-select.open .cs-options { opacity: 1; transform: translateY(0); pointer-events: auto; }
   .cs-option {
-    padding: 9px 14px; border-radius: 10px; font-size: 14px; cursor: pointer;
+    padding: 8px 12px; border-radius: 10px; font-size: 13px; cursor: pointer;
     color: var(--text-dim); transition: background 0.15s, color 0.15s;
   }
   .cs-option:hover { background: rgba(255,255,255,0.1); color: var(--text); }
@@ -154,7 +155,7 @@
 
   .search-shell input {
     flex: 1; background: transparent; border: none; outline: none;
-    color: var(--text); font-size: 16px; padding: 12px 6px;
+    color: var(--text); font-size: 14px; padding: 8px 6px;
   }
   .search-shell input::placeholder { color: var(--text-dim); }
 
@@ -179,19 +180,47 @@
   .search-shell button {
     background: linear-gradient(135deg, var(--accent), var(--accent2));
     color: #fff; border: none; border-radius: 50%;
-    width: 44px; height: 44px; display: flex; align-items: center; justify-content: center;
-    cursor: pointer; font-size: 18px; box-shadow: 0 4px 16px var(--accent-glow);
+    width: 38px; height: 38px; display: flex; align-items: center; justify-content: center;
+    cursor: pointer; font-size: 16px; box-shadow: 0 4px 16px var(--accent-glow);
     transition: transform 0.15s;
   }
   .search-shell button:hover { transform: translateY(-1px); }
 
-  .top-actions { display: flex; gap: 12px; flex-shrink: 0; }
+  /* 整合到同一行的书签搜索 */
+  .bm-search-shell {
+    display: flex; align-items: center; gap: 8px;
+    background: var(--glass-bg); border: 1px solid var(--glass-border);
+    backdrop-filter: blur(20px) saturate(140%); border-radius: 999px; 
+    padding: 8px 14px;
+    flex: 1; max-width: 260px; /* 限制最大宽度，防止挤占主搜索 */
+  }
+  .bm-search-icon { font-size: 16px; color: var(--text-dim); flex-shrink: 0; display:flex;}
+  .bm-search-shell input {
+    flex: 1; background: transparent; border: none; outline: none;
+    color: var(--text); font-size: 13.5px;
+  }
+  .bm-search-shell input::placeholder { color: var(--text-dim); }
+  .bm-search-clear {
+    cursor: pointer; color: var(--text-dim); font-size: 16px;
+    padding: 2px; border-radius: 6px; transition: background 0.15s, color 0.15s; display:flex;
+  }
+  .bm-search-clear:hover { background: rgba(255,255,255,0.1); color: var(--text); }
+
+  /* 整合到同一行的时钟 */
+  .clock {
+    font-size: 13.5px; color: var(--text-dim); font-family: monospace;
+    background: var(--glass-bg); padding: 8px 16px; border-radius: 999px; /* 统一胶囊状 */
+    border: 1px solid var(--glass-border); backdrop-filter: blur(10px); letter-spacing: 0.5px;
+    flex-shrink: 0; display: flex; align-items: center;
+  }
+
+  .top-actions { display: flex; gap: 10px; flex-shrink: 0; align-items: center;}
   
   .icon-btn {
-    width: 46px; height: 46px; border-radius: 50%;
+    width: 42px; height: 42px; border-radius: 50%;
     background: var(--glass-bg); border: 1px solid var(--glass-border);
     backdrop-filter: blur(24px); display: flex; align-items: center; justify-content: center;
-    cursor: pointer; font-size: 20px; flex-shrink: 0; color: var(--text);
+    cursor: pointer; font-size: 18px; flex-shrink: 0; color: var(--text);
     transition: background 0.2s, transform 0.2s, color 0.2s;
   }
   .icon-btn:hover { background: var(--glass-bg-strong); transform: rotate(10deg); }
@@ -200,39 +229,11 @@
     color: #fff; border-color: transparent; box-shadow: 0 4px 16px var(--accent-glow); transform: none;
   }
 
-  .toolbar {
-    display: flex; justify-content: space-between; align-items: center; 
-    margin-bottom: 22px; flex-shrink: 0; 
-  }
-  .bm-search-shell {
-    display: flex; align-items: center; gap: 10px;
-    background: var(--glass-bg); border: 1px solid var(--glass-border);
-    backdrop-filter: blur(20px) saturate(140%); border-radius: 16px; padding: 10px 16px;
-    flex: 1; max-width: 460px;
-  }
-  .bm-search-icon { font-size: 18px; color: var(--text-dim); flex-shrink: 0; display:flex;}
-  .bm-search-shell input {
-    flex: 1; background: transparent; border: none; outline: none;
-    color: var(--text); font-size: 14px;
-  }
-  .bm-search-shell input::placeholder { color: var(--text-dim); }
-  .bm-search-clear {
-    cursor: pointer; color: var(--text-dim); font-size: 18px;
-    padding: 2px; border-radius: 6px; transition: background 0.15s, color 0.15s; display:flex;
-  }
-  .bm-search-clear:hover { background: rgba(255,255,255,0.1); color: var(--text); }
-
-  .clock {
-    font-size: 14px; color: var(--text-dim); font-family: monospace;
-    background: var(--glass-bg); padding: 10px 16px; border-radius: 14px;
-    border: 1px solid var(--glass-border); backdrop-filter: blur(10px); letter-spacing: 0.5px;
-  }
-
-  /* -------- Content Scroll Area (只有这部分独立滚动) -------- */
+  /* -------- Content Scroll Area -------- */
   .content-scroll {
     flex: 1;
     overflow-y: auto;
-    padding-bottom: 32px; /* 底部留白 */
+    padding-bottom: 32px;
   }
 
   .section-title {
@@ -245,7 +246,6 @@
     gap: 18px; position: relative; z-index: 1;
   }
   
-  /* 透明卡片：默认移除背景和边框，悬停才显示毛玻璃 */
   .bm-card {
     position: relative; 
     background: transparent; 
@@ -275,13 +275,13 @@
     font-size: 12.5px; line-height: 1.35; max-width: 106px;
     overflow: hidden; text-overflow: ellipsis; display: -webkit-box;
     -webkit-line-clamp: 2; -webkit-box-orient: vertical;
-    text-shadow: 0 1px 4px rgba(0,0,0,0.5); /* 增加一层阴影，防止在亮色壁纸下看不清字 */
+    text-shadow: 0 1px 4px rgba(0,0,0,0.5);
   }
   
   .bm-actions {
     position: absolute; top: 8px; right: 8px; display: none; gap: 5px; z-index: 10;
   }
-  .main.edit-mode .bm-card:hover .bm-actions { display: flex; } /* 仅在编辑模式且悬停时显示 */
+  .main.edit-mode .bm-card:hover .bm-actions { display: flex; }
   
   .bm-actions span {
     background: rgba(0,0,0,0.45); backdrop-filter: blur(6px);
@@ -388,21 +388,20 @@
         </div>
         <button id="go"><span class="iconify" data-icon="lucide:search"></span></button>
       </div>
+
+      <div class="bm-search-shell">
+        <span class="iconify bm-search-icon" data-icon="lucide:search"></span>
+        <input id="bmSearch" type="text" placeholder="搜索当前书签..." />
+        <span class="iconify bm-search-clear" id="bmSearchClear" data-icon="lucide:x" style="display:none;"></span>
+      </div>
+      
+      <div id="clock" class="clock"></div>
       
       <div class="top-actions">
         <button class="icon-btn" id="refreshBg" title="换一张壁纸"><span class="iconify" data-icon="lucide:refresh-cw"></span></button>
         <button class="icon-btn" id="addBtn" title="添加书签"><span class="iconify" data-icon="lucide:plus"></span></button>
         <button class="icon-btn" id="settingsBtn" title="设置 / 编辑模式"><span class="iconify" data-icon="lucide:settings"></span></button>
       </div>
-    </div>
-
-    <div class="toolbar">
-      <div class="bm-search-shell">
-        <span class="iconify bm-search-icon" data-icon="lucide:search"></span>
-        <input id="bmSearch" type="text" placeholder="在当前分类中搜索书签..." />
-        <span class="iconify bm-search-clear" id="bmSearchClear" data-icon="lucide:x" style="display:none;"></span>
-      </div>
-      <div id="clock" class="clock"></div>
     </div>
 
     <div class="content-scroll" id="contentScroll">
@@ -479,7 +478,7 @@ const SEARCH_ENGINES = {
   youtube:  q => `https://www.youtube.com/results?search_query=${encodeURIComponent(q)}`,
 };
 
-/* ---------- 北京时间时钟 (YYYY-MM-DD HH:mm:ss) ---------- */
+/* ---------- 北京时间时钟 (带星期) ---------- */
 function updateClock() {
   const now = new Date();
   const year = now.getFullYear();
@@ -488,7 +487,10 @@ function updateClock() {
   const hours = String(now.getHours()).padStart(2, '0');
   const minutes = String(now.getMinutes()).padStart(2, '0');
   const seconds = String(now.getSeconds()).padStart(2, '0');
-  document.getElementById('clock').textContent = `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+  const weekDays = ['星期日', '星期一', '星期二', '星期三', '星期四', '星期五', '星期六'];
+  const weekDay = weekDays[now.getDay()];
+  
+  document.getElementById('clock').textContent = `${year}-${month}-${day} ${hours}:${minutes}:${seconds} ${weekDay}`;
 }
 setInterval(updateClock, 1000);
 updateClock();
@@ -759,7 +761,6 @@ function renderSidebar() {
       activeCategory = el.dataset.cat;
       renderSidebar();
       renderGrid();
-      // 核心修复：只滚动独立的内容区域
       document.getElementById("contentScroll").scrollTo({ top: 0, behavior: "smooth" });
     });
   });
