@@ -1010,7 +1010,7 @@
         const SEARCH_ENGINES = {
             google: q => `https://www.google.com/search?q=${encodeURIComponent(q)}`,
             bing: q => `https://www.bing.com/search?q=${encodeURIComponent(q)}`,
-            douban: q => `https://www.douban.com/search?q=${encodeURIComponent(q)}`,
+            douban: q => `https://www.douban.com/search?cat=1002&&q=${encodeURIComponent(q)}`,
             zhihu: q => `https://www.zhihu.com/search?type=content&q=${encodeURIComponent(q)}`,
             bilibili: q => `https://search.bilibili.com/all?keyword=${encodeURIComponent(q)}`,
             youtube: q => `https://www.youtube.com/results?search_query=${encodeURIComponent(q)}`,
