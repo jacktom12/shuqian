@@ -565,6 +565,13 @@
             height: 32px;
             object-fit: contain;
         }
+        .bm-info {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 3px;
+            min-width: 0;
+        }
         .bm-title {
             font-size: 12px;
             line-height: 1.35;
@@ -575,6 +582,10 @@
             -webkit-line-clamp: 2;
             -webkit-box-orient: vertical;
             text-shadow: 0 1px 4px rgba(0, 0, 0, 0.5);
+        }
+        .bm-url,
+        .bm-tags {
+            display: none;
         }
 
         .bm-actions {
@@ -622,6 +633,90 @@
             color: var(--text-dim);
             margin-top: 50px;
             font-size: 14px;
+        }
+
+        /* ===== 书签视图切换（列表模式） ===== */
+        .grid.list-view {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .grid.list-view .bm-card {
+            flex-direction: row;
+            align-items: center;
+            justify-content: flex-start;
+            text-align: left;
+            padding: 10px 14px;
+            border-radius: 14px;
+            width: 100%;
+            transform: none;
+        }
+        .grid.list-view .bm-card:hover {
+            transform: none;
+            background: var(--glass-bg-strong);
+            border-color: var(--glass-border);
+            backdrop-filter: blur(18px) saturate(140%);
+            -webkit-backdrop-filter: blur(18px) saturate(140%);
+            box-shadow: 0 8px 22px rgba(0, 0, 0, 0.25);
+        }
+        .grid.list-view .bm-info {
+            flex: 1;
+            align-items: flex-start;
+            margin-left: 12px;
+            gap: 4px;
+            min-width: 0;
+        }
+        .grid.list-view .bm-icon {
+            width: 36px;
+            height: 36px;
+            margin-bottom: 0;
+            flex-shrink: 0;
+        }
+        .grid.list-view .bm-icon img {
+            width: 22px;
+            height: 22px;
+        }
+        .grid.list-view .bm-title {
+            display: block;
+            max-width: 100%;
+            font-size: 13px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            -webkit-line-clamp: unset;
+        }
+        .grid.list-view .bm-url {
+            display: block;
+            width: 100%;
+            font-size: 12px;
+            color: var(--text-dim);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .grid.list-view .bm-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            font-size: 11px;
+            color: var(--text-dim);
+            opacity: 0.85;
+        }
+        .grid.list-view .bm-tags span {
+            background: rgba(255, 255, 255, 0.08);
+            padding: 1px 8px;
+            border-radius: 999px;
+        }
+        .grid.list-view .fav-badge {
+            position: static;
+            margin-right: 4px;
+            font-size: 16px;
+            flex-shrink: 0;
+        }
+        .grid.list-view .bm-actions {
+            top: 50%;
+            right: 12px;
+            transform: translateY(-50%);
         }
 
         /* ===== Modal ===== */
@@ -823,6 +918,12 @@
                 grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
                 gap: 12px;
             }
+            .grid.list-view .bm-card {
+                padding: 8px 12px;
+            }
+            .grid.list-view .bm-info {
+                margin-left: 8px;
+            }
         }
         @media (max-width: 600px) {
             .sidebar {
@@ -841,6 +942,9 @@
             .grid {
                 grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
                 gap: 10px;
+            }
+            .grid.list-view .bm-card {
+                padding: 6px 10px;
             }
             .modal {
                 width: 92%;
@@ -924,6 +1028,9 @@
                 </button>
                 <button class="icon-btn" id="settingsBtn" title="设置 / 编辑模式">
                     <span class="iconify" data-icon="lucide:settings"></span>
+                </button>
+                <button class="icon-btn" id="viewToggle" title="切换列表 / 卡片视图">
+                    <span class="iconify" data-icon="lucide:list"></span>
                 </button>
             </div>
         </div>
@@ -1213,7 +1320,6 @@
         document.getElementById("settingsBtn").addEventListener("click", () => {
             requirePassword(() => {
                 isEditMode = !isEditMode;
-                document.getElementById("mainArea")?.classList.toggle("edit-mode", isEditMode);
                 document.body.classList.toggle("edit-mode", isEditMode);
                 document.getElementById("settingsBtn").classList.toggle("active", isEditMode);
                 showToast(isEditMode ? "已开启编辑模式" : "已关闭编辑模式", "success");
@@ -1386,6 +1492,7 @@
         let bookmarks = [];
         let activeCategory = "__fav__";
         let searchKeyword = "";
+        let viewMode = localStorage.getItem("bm_view_mode") || "grid"; // grid 卡片视图 | list 列表视图
 
         async function loadBookmarks() {
             try {
@@ -1449,6 +1556,9 @@
         function renderGrid() {
             const grid = document.getElementById("grid");
             const sectionTitle = document.getElementById("sectionTitle");
+            // 根据视图模式切换 list-view 类
+            grid.classList.toggle("list-view", viewMode === "list");
+
             let list = bookmarks;
             let baseTitle = "全部书签";
             if (activeCategory === "__fav__") {
@@ -1490,7 +1600,11 @@
                                 <span data-act="del"><span class="iconify" data-icon="lucide:trash-2"></span></span>
                             </span>
                             <div class="bm-icon"><img src="${favicon(bm.url)}" onerror="this.style.display='none'"/></div>
-                            <div class="bm-title">${escapeHtml(bm.title || bm.url)}</div>
+                            <div class="bm-info">
+                                <div class="bm-title">${escapeHtml(bm.title || bm.url)}</div>
+                                <div class="bm-url">${escapeHtml(bm.url)}</div>
+                                ${bm.tags && bm.tags.length ? `<div class="bm-tags">${bm.tags.map(t => `<span>${escapeHtml(t)}</span>`).join("")}</div>` : ""}
+                            </div>
                         `;
                     card.querySelector('[data-act="edit"]').addEventListener("click", ev => {
                         ev.preventDefault();
@@ -1605,6 +1719,27 @@
             renderGrid();
             bmSearchInput.focus();
         });
+
+        /* ============================================================
+           视图切换
+           ============================================================ */
+        const viewToggle = document.getElementById("viewToggle");
+
+        function updateViewButton() {
+            if (!viewToggle) return;
+            const icon = viewToggle.querySelector(".iconify");
+            icon.dataset.icon = viewMode === "grid" ? "lucide:list" : "lucide:layout-grid";
+            viewToggle.classList.toggle("active", viewMode === "list");
+        }
+
+        viewToggle.addEventListener("click", () => {
+            viewMode = viewMode === "grid" ? "list" : "grid";
+            localStorage.setItem("bm_view_mode", viewMode);
+            updateViewButton();
+            renderGrid();
+        });
+
+        updateViewButton();
 
         /* ============================================================
            启动
