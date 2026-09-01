@@ -985,6 +985,35 @@
             }
         }
 
+        /* ===== 触摸设备适配 =====
+           手机没有 hover，凡是依赖 :hover 的交互都会出问题，这里统一兜底 */
+        /* 1) 关掉 daisyUI tooltip：点一下按钮后 hover 状态会一直粘着，提示词不会自己消失 */
+        @media (hover: none), (any-hover: none) {
+            .tooltip::before,
+            .tooltip::after {
+                content: none !important;
+            }
+        }
+        /* 2) 编辑模式下常驻显示卡片操作按钮（原本要 hover 卡片才出现，手机上永远不会触发） */
+        @media (hover: none), (any-hover: none) {
+            body.edit-mode .bm-actions {
+                display: flex !important;
+            }
+        }
+        /* 3) 触摸设备上 :hover 会一直粘着，按钮点了就歪着不回来，改用 :active 做点击反馈
+              注意排除 .active，否则编辑模式 / 列表视图的紫色高亮会被覆盖掉 */
+        @media (hover: none), (any-hover: none) {
+            .icon-btn:not(.active):hover {
+                background: var(--glass-bg);
+            }
+            .icon-btn:hover .iconify {
+                transform: none;
+            }
+            .icon-btn:not(.active):active {
+                background: var(--glass-bg-strong);
+            }
+        }
+
         /* ===== 手机端：底部分类筛选（daisyUI filter）===== */
         .mobile-filter {
             display: none; /* 桌面端完全不占位 */
@@ -1031,6 +1060,25 @@
             }
         }
         @media (max-width: 600px) {
+            /* --- Toast 改到顶部居中通栏：缩在右上角容易被按钮群盖住、一闪而过看不见 --- */
+            #toastWrap {
+                top: 12px;
+                left: 16px;
+                right: 16px;
+                align-items: center;
+            }
+            .toast {
+                min-width: 0;
+                max-width: 100%;
+                width: 100%;
+            }
+            /* 手指点击区域放大 */
+            .bm-actions span {
+                width: 30px;
+                height: 30px;
+                font-size: 15px;
+            }
+
             /* --- 侧边栏让位，分类改到底部 filter 条 --- */
             .sidebar {
                 display: none;
@@ -1156,7 +1204,7 @@
                         <path fill="currentColor" d="m17.717 16.302l15.98 15.98l-1.414 1.415l-15.98-15.98z" />
                     </svg>
                 </span>
-                <button class="go-btn btn btn-ghost btn-circle tooltip tooltip-bottom" id="go" data-tip="搜索">
+                <button class="go-btn btn btn-ghost btn-circle tooltip tooltip-bottom" id="go" data-tip="搜索" aria-label="搜索">
                     <span class="iconify" data-icon="lucide:search"></span>
                 </button>
             </div>
@@ -1180,19 +1228,19 @@
 
             <!-- 操作按钮 -->
             <div class="top-actions">
-                <button class="icon-btn btn btn-circle tooltip tooltip-bottom" id="refreshBg" data-tip="换一张壁纸">
+                <button class="icon-btn btn btn-circle tooltip tooltip-bottom" id="refreshBg" data-tip="换一张壁纸" aria-label="换一张壁纸">
                     <span class="iconify" data-icon="lucide:refresh-cw"></span>
                 </button>
-                <button class="icon-btn btn btn-circle tooltip tooltip-bottom" id="addBtn" data-tip="添加书签">
+                <button class="icon-btn btn btn-circle tooltip tooltip-bottom" id="addBtn" data-tip="添加书签" aria-label="添加书签">
                     <span class="iconify" data-icon="lucide:plus"></span>
                 </button>
-                <button class="icon-btn btn btn-circle tooltip tooltip-bottom" id="settingsBtn" data-tip="设置 / 编辑模式">
+                <button class="icon-btn btn btn-circle tooltip tooltip-bottom" id="settingsBtn" data-tip="设置 / 编辑模式" aria-label="设置 / 编辑模式">
                     <span class="iconify" data-icon="lucide:settings"></span>
                 </button>
-                <button class="icon-btn btn btn-circle tooltip tooltip-bottom" id="viewToggle" data-tip="切换列表 / 卡片视图">
+                <button class="icon-btn btn btn-circle tooltip tooltip-bottom" id="viewToggle" data-tip="切换列表 / 卡片视图" aria-label="切换列表 / 卡片视图">
                     <span class="iconify" data-icon="lucide:list"></span>
                 </button>
-                <button class="icon-btn btn btn-circle tooltip tooltip-bottom" id="themeToggle" data-tip="切换到浅色模式">
+                <button class="icon-btn btn btn-circle tooltip tooltip-bottom" id="themeToggle" data-tip="切换到浅色模式" aria-label="切换主题">
                     <span class="iconify" data-icon="lucide:sun"></span>
                 </button>
             </div>
@@ -1485,12 +1533,21 @@
            编辑模式
            ============================================================ */
         let isEditMode = false;
+        // 触摸设备没有 hover，编辑按钮是常驻显示的，提示文案要告诉用户点哪儿
+        const isTouchDevice = window.matchMedia("(hover: none), (any-hover: none)").matches;
         document.getElementById("settingsBtn").addEventListener("click", () => {
             requirePassword(() => {
                 isEditMode = !isEditMode;
                 document.body.classList.toggle("edit-mode", isEditMode);
                 document.getElementById("settingsBtn").classList.toggle("active", isEditMode);
-                showToast(isEditMode ? "已开启编辑模式" : "已关闭编辑模式", "success");
+                if (!isEditMode) {
+                    showToast("已关闭编辑模式", "success");
+                } else {
+                    showToast(
+                        isTouchDevice ? "已开启编辑模式，点卡片右上角图标可编辑 / 删除" : "已开启编辑模式",
+                        "success"
+                    );
+                }
             });
         });
         const stylePatch = document.createElement("style");
