@@ -2,6 +2,8 @@
 <html lang="zh-CN" data-theme="dark">
 <head>
     <meta charset="UTF-8" />
+    <!-- 缺了这行，手机浏览器会按 980px 虚拟宽度缩放渲染，所有响应式断点全部失效 -->
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <title>我的书签</title>
     <link rel="icon" href="https://api.iconify.design/lucide:bookmark-check.svg?color=%237aa2ff" type="image/svg+xml">
     <script src="https://code.iconify.design/3/3.1.0/iconify.min.js"></script>
@@ -94,6 +96,8 @@
         body {
             margin: 0;
             height: 100vh;
+            /* 手机浏览器地址栏伸缩时 100vh 会抖，dvh 能动态跟随；老浏览器自动回退 vh */
+            height: 100dvh;
             overflow: hidden;
             font-family: -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif;
             color: var(--text);
@@ -123,6 +127,7 @@
             display: flex;
             flex-direction: column;
             height: 100vh;
+            height: 100dvh;
             padding: 22px 28px 28px 28px;
             gap: 18px;
         }
@@ -980,26 +985,9 @@
             }
         }
 
-        /* ===== 手机端：分类抽屉 ===== */
-        /* 汉堡按钮与抽屉头部只在窄屏出现，宽屏完全不占位 */
-        .menu-btn,
-        .sidebar-head {
-            display: none;
-        }
-        #drawerMask {
-            position: fixed;
-            inset: 0;
-            z-index: 290; /* 盖住 topbar(60)，但要低于抽屉(300) */
-            background: var(--scrim);
-            backdrop-filter: blur(4px);
-            -webkit-backdrop-filter: blur(4px);
-            opacity: 0;
-            pointer-events: none;
-            transition: opacity 0.25s ease;
-        }
-        #drawerMask.show {
-            opacity: 1;
-            pointer-events: auto;
+        /* ===== 手机端：底部分类筛选（daisyUI filter）===== */
+        .mobile-filter {
+            display: none; /* 桌面端完全不占位 */
         }
 
         /* ===== 响应式 ===== */
@@ -1043,55 +1031,59 @@
             }
         }
         @media (max-width: 600px) {
-            /* --- 侧边栏改造成从左侧滑出的抽屉 --- */
-            .menu-btn {
-                display: flex;
-            }
+            /* --- 侧边栏让位，分类改到底部 filter 条 --- */
             .sidebar {
+                display: none;
+            }
+            .mobile-filter {
                 display: block;
-                position: fixed;
-                top: 0;
-                left: 0;
-                bottom: 0;
-                width: 260px;
-                max-width: 78vw;
-                height: 100%;
-                z-index: 300;
-                border-radius: 0 26px 26px 0;
-                padding: 14px 12px 24px;
-                box-shadow: 0 0 60px var(--shadow-strong);
-                transform: translateX(-100%);
-                transition: transform 0.28s cubic-bezier(0.4, 0, 0.2, 1);
+                flex-shrink: 0;
+                /* 最多占三分之一屏，分类再多也只是内部滚动，不会把书签挤没 */
+                max-height: 34vh;
+                overflow-y: auto;
+                padding: 10px 12px calc(10px + env(safe-area-inset-bottom));
+                background: var(--glass-bg);
+                border: 1px solid var(--glass-border);
+                backdrop-filter: blur(22px) saturate(140%);
+                -webkit-backdrop-filter: blur(22px) saturate(140%);
+                border-radius: var(--radius-lg);
+                box-shadow: 0 8px 32px var(--shadow-mid);
             }
-            .sidebar.open {
-                transform: translateX(0);
-            }
-            .sidebar-head {
+            /* daisyUI .filter 默认是横向不换行的 grid，这里改成自动换行的 chip 流 */
+            .mobile-filter .filter {
                 display: flex;
+                flex-wrap: wrap;
+                gap: 6px;
                 align-items: center;
-                justify-content: space-between;
-                gap: 10px;
-                padding: 4px 4px 12px 8px;
-                margin-bottom: 8px;
-                border-bottom: 1px solid var(--glass-border);
-                font-size: 13px;
-                letter-spacing: 1px;
-                color: var(--text-dim);
             }
-            .sidebar-head .drawer-close {
-                width: 32px;
+            .mobile-filter .filter input {
+                appearance: none;
+                -webkit-appearance: none;
                 height: 32px;
                 min-height: 0;
-                font-size: 15px;
-                box-shadow: none;
+                margin: 0;
+                padding: 0 12px;
+                border-radius: 999px;
+                font-size: 12.5px;
+                line-height: 1;
+                background: var(--chip-bg);
+                border: 1px solid var(--glass-border);
+                color: var(--text);
+                flex-shrink: 0;
+                transition: background 0.2s, color 0.2s, border-color 0.2s;
             }
-            /* 手指点击区域放大 */
-            .cat-item {
-                padding: 11px 12px;
-                font-size: 14px;
+            /* radio 本身没有文字内容，靠 aria-label 渲染可见文本（daisyUI filter 的玩法） */
+            .mobile-filter .filter input::before {
+                content: attr(aria-label);
+            }
+            .mobile-filter .filter input:checked {
+                background: linear-gradient(135deg, var(--accent), var(--accent2));
+                border-color: transparent;
+                color: #fff;
+                box-shadow: 0 3px 12px var(--accent-glow);
             }
 
-            /* --- 顶部栏重排：第一行 汉堡+引擎+主搜索，第二行 书签搜索+操作按钮 --- */
+            /* --- 顶部栏重排：第一行 引擎+主搜索，第二行 书签搜索+操作按钮 --- */
             .search-shell {
                 flex: 1 1 60%;
                 min-width: 120px;
@@ -1126,8 +1118,6 @@
     <!-- ===== 背景 ===== -->
     <div id="bg"></div>
     <div id="bg-overlay"></div>
-    <!-- 手机端分类抽屉的遮罩 -->
-    <div id="drawerMask"></div>
     <div id="toastWrap"></div>
 
     <!-- ===== 布局 ===== -->
@@ -1135,11 +1125,6 @@
 
         <!-- ===== Topbar (全宽) ===== -->
         <div class="topbar">
-
-            <!-- 手机端：打开分类抽屉 -->
-            <button class="icon-btn btn btn-circle menu-btn" id="menuBtn" aria-label="打开分类">
-                <span class="iconify" data-icon="lucide:menu"></span>
-            </button>
 
             <!-- 搜索引擎下拉 -->
             <div class="custom-select ctrl" id="engineSelect" style="padding:0;">
@@ -1216,14 +1201,8 @@
         <!-- ===== Main Row (sidebar + content) ===== -->
         <div class="main-row">
 
-            <!-- 左侧分类栏（手机端为抽屉） -->
+            <!-- 左侧分类栏（桌面端显示，手机端隐藏） -->
             <div class="sidebar" id="sidebar">
-                <div class="sidebar-head">
-                    <span>书签分类</span>
-                    <button class="icon-btn btn btn-circle drawer-close" id="drawerClose" aria-label="关闭分类">
-                        <span class="iconify" data-icon="lucide:x"></span>
-                    </button>
-                </div>
                 <div id="catList"></div>
             </div>
 
@@ -1235,6 +1214,11 @@
             </div>
 
         </div>
+
+        <!-- ===== 手机端：底部分类筛选（daisyUI filter，桌面端隐藏） ===== -->
+        <nav class="mobile-filter" id="mobileFilter" aria-label="书签分类筛选">
+            <div class="filter" id="mobileCatFilter"></div>
+        </nav>
     </div>
 
     <!-- ===== Modals ===== -->
@@ -1733,9 +1717,9 @@
                     renderSidebar();
                     renderGrid();
                     document.getElementById("contentScroll").scrollTo({ top: 0, behavior: "smooth" });
-                    closeDrawer(); // 手机上选完分类自动收起抽屉（宽屏无副作用）
                 });
             });
+            renderMobileFilter(); // 桌面点分类时同步底部 chip 的选中态
         }
 
         function renderGrid() {
@@ -1950,32 +1934,37 @@
         applyTheme(document.documentElement.dataset.theme === "light" ? "light" : "dark");
 
         /* ============================================================
-           手机端分类抽屉（宽屏时这些 class 不产生任何视觉效果）
+           手机端底部分类筛选（daisyUI filter；宽屏隐藏，不参与交互）
            ============================================================ */
-        const sidebar = document.getElementById("sidebar");
-        const drawerMask = document.getElementById("drawerMask");
+        const mobileCatFilter = document.getElementById("mobileCatFilter");
 
-        function openDrawer() {
-            sidebar.classList.add("open");
-            drawerMask.classList.add("show");
-        }
-        function closeDrawer() {
-            sidebar.classList.remove("open");
-            drawerMask.classList.remove("show");
+        function renderMobileFilter() {
+            if (!mobileCatFilter) return;
+            const counts = getCategoryCounts();
+            const cats = Object.keys(counts).sort((a, b) => counts[b] - counts[a]);
+            const items = [
+                { key: "__all__", label: "全部", count: bookmarks.length },
+                { key: "__fav__", label: "收藏", count: bookmarks.filter(b => b.favorite).length },
+                ...cats.map(c => ({ key: c, label: c, count: counts[c] })),
+            ];
+            mobileCatFilter.innerHTML = items
+                .map(
+                    it =>
+                        `<input class="btn cat-chip" type="radio" name="bm_cat_filter" ` +
+                        `data-cat="${escapeHtml(it.key)}" aria-label="${escapeHtml(it.label)} ${it.count}"` +
+                        `${activeCategory === it.key ? " checked" : ""} />`
+                )
+                .join("");
         }
 
-        document.getElementById("menuBtn").addEventListener("click", (e) => {
-            e.stopPropagation();
-            sidebar.classList.contains("open") ? closeDrawer() : openDrawer();
-        });
-        drawerMask.addEventListener("click", closeDrawer);
-        document.getElementById("drawerClose").addEventListener("click", closeDrawer);
-        document.addEventListener("keydown", (e) => {
-            if (e.key === "Escape") closeDrawer();
-        });
-        // 从窄屏拉回宽屏时清掉抽屉状态，避免遮罩残留挡住页面
-        window.addEventListener("resize", () => {
-            if (window.innerWidth > 600) closeDrawer();
+        // 事件委托：radio 的 change 会冒泡，统一在这里切换分类
+        mobileCatFilter.addEventListener("change", (e) => {
+            const el = e.target;
+            if (!el.dataset || !el.dataset.cat) return;
+            activeCategory = el.dataset.cat;
+            renderSidebar(); // 同步桌面侧边栏高亮（手机上看不见，但切换窗口尺寸时不会错位）
+            renderGrid();
+            document.getElementById("contentScroll").scrollTo({ top: 0, behavior: "smooth" });
         });
 
         /* ============================================================
