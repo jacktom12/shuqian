@@ -1,10 +1,12 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="zh-CN" data-theme="dark">
 <head>
     <meta charset="UTF-8" />
     <title>我的书签</title>
     <link rel="icon" href="https://api.iconify.design/lucide:bookmark-check.svg?color=%237aa2ff" type="image/svg+xml">
     <script src="https://code.iconify.design/3/3.1.0/iconify.min.js"></script>
+    <!-- daisyUI 语义化组件库（CDN 完整版，自带 dark 主题；放在自定义样式之前，保证下方玻璃拟态样式可覆盖它） -->
+    <link href="https://cdn.jsdelivr.net/npm/daisyui@4/dist/full.min.css" rel="stylesheet" type="text/css" />
     <style>
         /* ===== 全局重置 & 变量 ===== */
         :root {
@@ -221,6 +223,8 @@
             flex-shrink: 0;
             width: 28px;
             height: 28px;
+            min-height: 0; /* 覆盖 daisyUI .btn 的 min-height */
+            padding: 0;
             border-radius: 50%;
             display: none;
             align-items: center;
@@ -244,6 +248,8 @@
             flex-shrink: 0;
             width: 36px;
             height: 100%;
+            min-height: 0; /* 覆盖 daisyUI .btn 的 min-height */
+            padding: 0;
             border-radius: 0;
             background: transparent;
             border: none;
@@ -350,6 +356,7 @@
             font-size: 15px;
             width: 22px;
             height: 22px;
+            min-height: 0; /* 覆盖 daisyUI .btn 的 min-height */
             padding: 0;
             border-radius: 50%;
             transition: background 0.15s, color 0.15s;
@@ -396,6 +403,8 @@
         .icon-btn {
             width: var(--top-height);
             height: var(--top-height);
+            min-height: 0; /* 覆盖 daisyUI .btn 的 min-height */
+            padding: 0;
             border-radius: 50%;
             background: var(--glass-bg);
             border: 1px solid var(--glass-border);
@@ -413,6 +422,13 @@
         }
         .icon-btn:hover {
             background: var(--glass-bg-strong);
+        }
+        /* 旋转动效挪到内部图标上，避免 daisyUI tooltip 跟着一起倾斜 */
+        .icon-btn .iconify {
+            display: inline-flex;
+            transition: transform 0.2s;
+        }
+        .icon-btn:hover .iconify {
             transform: rotate(8deg);
         }
         .icon-btn.active {
@@ -487,6 +503,9 @@
             opacity: 0.75;
             background: rgba(255, 255, 255, 0.12);
             padding: 1px 8px;
+            border: none; /* 覆盖 daisyUI .badge 的边框 */
+            height: auto;
+            min-height: 0;
             border-radius: 10px;
             flex-shrink: 0;
         }
@@ -733,7 +752,8 @@
         .overlay.show {
             display: flex;
         }
-        .modal {
+        /* 注意：自定义弹窗类名是 .modal-card，不是 .modal（daisyUI 已占用 .modal，直接复用会冲突） */
+        .modal-card {
             background: rgba(24, 26, 34, 0.78);
             border: 1px solid var(--glass-border);
             backdrop-filter: blur(30px) saturate(160%);
@@ -753,20 +773,22 @@
                 transform: translateY(0) scale(1);
             }
         }
-        .modal h3 {
+        .modal-card h3 {
             margin: 0 0 18px;
             font-size: 18px;
             font-weight: 600;
         }
-        .modal label {
+        .modal-card label {
             font-size: 12.5px;
             color: var(--text-dim);
             display: block;
             margin: 12px 0 5px;
+            padding: 0; /* 覆盖 daisyUI .label 的默认内边距 */
         }
-        .modal input,
-        .modal textarea {
+        .modal-card input:not([type="checkbox"]),
+        .modal-card textarea {
             width: 100%;
+            height: 40px; /* 覆盖 daisyUI .input 的 3rem 高度，保持原尺寸 */
             background: rgba(255, 255, 255, 0.06);
             border: 1px solid var(--glass-border);
             border-radius: 10px;
@@ -775,29 +797,32 @@
             font-size: 14px;
             outline: none;
         }
-        .modal input:focus {
+        .modal-card input:not([type="checkbox"]):focus {
             border-color: var(--accent);
         }
-        .modal .row {
+        .modal-card .row {
             display: flex;
             align-items: center;
             gap: 8px;
             margin-top: 14px;
         }
-        .modal .row label {
+        .modal-card .row label {
             margin: 0;
+            padding: 0;
         }
-        .modal .btns {
+        .modal-card .btns {
             display: flex;
             justify-content: flex-end;
             gap: 10px;
             margin-top: 24px;
         }
-        .modal .btns button {
+        .modal-card .btns button {
             border: none;
             border-radius: 50%;
             width: 40px;
             height: 40px;
+            min-height: 0; /* 覆盖 daisyUI .btn 的 min-height */
+            padding: 0;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -805,7 +830,7 @@
             font-size: 20px;
             transition: transform 0.1s;
         }
-        .modal .btns button:active {
+        .modal-card .btns button:active {
             transform: scale(0.92);
         }
         .btn-primary {
@@ -821,6 +846,13 @@
             background: linear-gradient(135deg, #ff6b6b, #ff9472);
             color: #fff;
             box-shadow: 0 4px 16px rgba(255, 107, 107, 0.45);
+        }
+        .btn-primary:hover,
+        .btn-danger:hover {
+            filter: brightness(1.1);
+        }
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.14);
         }
 
         /* ===== Toast ===== */
@@ -946,7 +978,7 @@
             .grid.list-view .bm-card {
                 padding: 6px 10px;
             }
-            .modal {
+            .modal-card {
                 width: 92%;
                 padding: 20px 18px;
             }
@@ -988,7 +1020,7 @@
                     <input id="query" type="text" placeholder="搜索..." autofocus autocomplete="off" />
                     <div class="suggest-list" id="suggestList"></div>
                 </div>
-                <span class="query-clear" id="queryClear" title="清除">
+                <span class="query-clear btn btn-ghost btn-circle tooltip tooltip-bottom" id="queryClear" data-tip="清除">
                     <svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 50 50" aria-hidden="true">
                         <path d="M0 0h50v50H0z" fill="none" />
                         <path fill="currentColor" d="M25 42c-9.4 0-17-7.6-17-17S15.6 8 25 8s17 7.6 17 17s-7.6 17-17 17m0-32c-8.3 0-15 6.7-15 15s6.7 15 15 15s15-6.7 15-15s-6.7-15-15-15" />
@@ -996,7 +1028,7 @@
                         <path fill="currentColor" d="m17.717 16.302l15.98 15.98l-1.414 1.415l-15.98-15.98z" />
                     </svg>
                 </span>
-                <button class="go-btn" id="go">
+                <button class="go-btn btn btn-ghost btn-circle tooltip tooltip-bottom" id="go" data-tip="搜索">
                     <span class="iconify" data-icon="lucide:search"></span>
                 </button>
             </div>
@@ -1005,7 +1037,7 @@
             <div class="bm-search-shell">
                 <span class="iconify bm-search-icon" data-icon="lucide:search"></span>
                 <input id="bmSearch" type="text" placeholder="搜索当前书签..." autocomplete="off" />
-                <span class="bm-search-clear" id="bmSearchClear" title="清除">
+                <span class="bm-search-clear btn btn-ghost btn-circle tooltip tooltip-bottom" id="bmSearchClear" data-tip="清除">
                     <svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 50 50" aria-hidden="true">
                         <path d="M0 0h50v50H0z" fill="none" />
                         <path fill="currentColor" d="M25 42c-9.4 0-17-7.6-17-17S15.6 8 25 8s17 7.6 17 17s-7.6 17-17 17m0-32c-8.3 0-15 6.7-15 15s6.7 15 15 15s15-6.7 15-15s-6.7-15-15-15" />
@@ -1020,16 +1052,16 @@
 
             <!-- 操作按钮 -->
             <div class="top-actions">
-                <button class="icon-btn" id="refreshBg" title="换一张壁纸">
+                <button class="icon-btn btn btn-circle tooltip tooltip-bottom" id="refreshBg" data-tip="换一张壁纸">
                     <span class="iconify" data-icon="lucide:refresh-cw"></span>
                 </button>
-                <button class="icon-btn" id="addBtn" title="添加书签">
+                <button class="icon-btn btn btn-circle tooltip tooltip-bottom" id="addBtn" data-tip="添加书签">
                     <span class="iconify" data-icon="lucide:plus"></span>
                 </button>
-                <button class="icon-btn" id="settingsBtn" title="设置 / 编辑模式">
+                <button class="icon-btn btn btn-circle tooltip tooltip-bottom" id="settingsBtn" data-tip="设置 / 编辑模式">
                     <span class="iconify" data-icon="lucide:settings"></span>
                 </button>
-                <button class="icon-btn" id="viewToggle" title="切换列表 / 卡片视图">
+                <button class="icon-btn btn btn-circle tooltip tooltip-bottom" id="viewToggle" data-tip="切换列表 / 卡片视图">
                     <span class="iconify" data-icon="lucide:list"></span>
                 </button>
             </div>
@@ -1055,49 +1087,49 @@
 
     <!-- ===== Modals ===== -->
     <div class="overlay" id="pwOverlay">
-        <div class="modal">
+        <div class="modal-card">
             <h3>请输入密码</h3>
-            <label>管理密码</label>
-            <input type="password" id="pwInput" placeholder="输入密码" />
+            <label class="label">管理密码</label>
+            <input type="password" id="pwInput" placeholder="输入密码" class="input input-bordered" />
             <div class="btns">
-                <button class="btn-secondary" id="pwCancel"><span class="iconify" data-icon="lucide:x"></span></button>
-                <button class="btn-primary" id="pwConfirm"><span class="iconify" data-icon="lucide:check"></span></button>
+                <button class="btn-secondary btn btn-circle" id="pwCancel"><span class="iconify" data-icon="lucide:x"></span></button>
+                <button class="btn-primary btn btn-circle" id="pwConfirm"><span class="iconify" data-icon="lucide:check"></span></button>
             </div>
         </div>
     </div>
 
     <div class="overlay" id="editOverlay">
-        <div class="modal">
+        <div class="modal-card">
             <h3 id="editTitle">添加书签</h3>
-            <label>标题</label>
-            <input id="f-title" type="text" />
-            <label>URL</label>
-            <input id="f-url" type="text" placeholder="https://" />
-            <label>分类</label>
-            <input id="f-category" type="text" list="categoryList" placeholder="选择或输入分类" autocomplete="off" />
+            <label class="label">标题</label>
+            <input id="f-title" type="text" class="input input-bordered" />
+            <label class="label">URL</label>
+            <input id="f-url" type="text" placeholder="https://" class="input input-bordered" />
+            <label class="label">分类</label>
+            <input id="f-category" type="text" list="categoryList" placeholder="选择或输入分类" autocomplete="off" class="input input-bordered" />
             <datalist id="categoryList"></datalist>
-            <label>标签（逗号分隔）</label>
-            <input id="f-tags" type="text" />
-            <label>描述</label>
-            <input id="f-desc" type="text" />
+            <label class="label">标签（逗号分隔）</label>
+            <input id="f-tags" type="text" class="input input-bordered" />
+            <label class="label">描述</label>
+            <input id="f-desc" type="text" class="input input-bordered" />
             <div class="row">
-                <input type="checkbox" id="f-fav" style="width:auto;" />
+                <input type="checkbox" id="f-fav" class="checkbox checkbox-primary checkbox-sm" />
                 <label style="margin:0;">收藏</label>
             </div>
             <div class="btns">
-                <button class="btn-secondary" id="editCancel"><span class="iconify" data-icon="lucide:x"></span></button>
-                <button class="btn-primary" id="editSave"><span class="iconify" data-icon="lucide:check"></span></button>
+                <button class="btn-secondary btn btn-circle" id="editCancel"><span class="iconify" data-icon="lucide:x"></span></button>
+                <button class="btn-primary btn btn-circle" id="editSave"><span class="iconify" data-icon="lucide:check"></span></button>
             </div>
         </div>
     </div>
 
     <div class="overlay" id="delOverlay">
-        <div class="modal">
+        <div class="modal-card">
             <h3>确定删除吗？</h3>
             <p style="color:var(--text-dim); font-size:13.5px; margin:0;">此操作无法撤销，删除后该书签会永久移除。</p>
             <div class="btns">
-                <button class="btn-secondary" id="delCancel"><span class="iconify" data-icon="lucide:x"></span></button>
-                <button class="btn-danger" id="delConfirm"><span class="iconify" data-icon="lucide:trash-2"></span></button>
+                <button class="btn-secondary btn btn-circle" id="delCancel"><span class="iconify" data-icon="lucide:x"></span></button>
+                <button class="btn-danger btn btn-circle" id="delConfirm"><span class="iconify" data-icon="lucide:trash-2"></span></button>
             </div>
         </div>
     </div>
@@ -1530,16 +1562,16 @@
             const cats = Object.keys(counts).sort((a, b) => counts[b] - counts[a]);
             let html = `<div class="cat-item ${activeCategory === "__all__" ? "active" : ""}" data-cat="__all__">
                     <div class="cat-item-left"><span class="iconify" data-icon="lucide:layout-grid"></span><span>全部</span></div>
-                    <span class="cat-count">${bookmarks.length}</span>
+                    <span class="cat-count badge badge-sm">${bookmarks.length}</span>
                 </div>`;
             html += `<div class="cat-item ${activeCategory === "__fav__" ? "active" : ""}" data-cat="__fav__">
                     <div class="cat-item-left"><span class="iconify" data-icon="lucide:star"></span><span>收藏</span></div>
-                    <span class="cat-count">${bookmarks.filter(b => b.favorite).length}</span>
+                    <span class="cat-count badge badge-sm">${bookmarks.filter(b => b.favorite).length}</span>
                 </div>`;
             cats.forEach(cat => {
                 html += `<div class="cat-item ${activeCategory === cat ? "active" : ""}" data-cat="${escapeHtml(cat)}">
                         <div class="cat-item-left"><span class="iconify" data-icon="lucide:folder"></span><span>${escapeHtml(cat)}</span></div>
-                        <span class="cat-count">${counts[cat]}</span>
+                        <span class="cat-count badge badge-sm">${counts[cat]}</span>
                     </div>`;
             });
             catList.innerHTML = html;
