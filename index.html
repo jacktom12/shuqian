@@ -5,7 +5,16 @@
     <title>我的书签</title>
     <link rel="icon" href="https://api.iconify.design/lucide:bookmark-check.svg?color=%237aa2ff" type="image/svg+xml">
     <script src="https://code.iconify.design/3/3.1.0/iconify.min.js"></script>
-    <!-- daisyUI 语义化组件库（CDN 完整版，自带 dark 主题；放在自定义样式之前，保证下方玻璃拟态样式可覆盖它） -->
+    <!-- 尽早套用上次的主题，避免首屏先闪一下深色再跳浅色 -->
+    <script>
+        (function () {
+            try {
+                var t = localStorage.getItem("bm_theme");
+                if (t === "light" || t === "dark") document.documentElement.dataset.theme = t;
+            } catch (e) {}
+        })();
+    </script>
+    <!-- daisyUI 语义化组件库（CDN 完整版，自带 dark/light 主题；放在自定义样式之前，保证下方玻璃拟态样式可覆盖它） -->
     <link href="https://cdn.jsdelivr.net/npm/daisyui@4/dist/full.min.css" rel="stylesheet" type="text/css" />
     <style>
         /* ===== 全局重置 & 变量 ===== */
@@ -24,6 +33,50 @@
             --danger: #ff6b6b;
             --top-height: 46px;
             --sidebar-width: 170px;
+
+            /* --- 主题派生变量（深色为默认）---
+               深浅切换只改这一组变量，所有控件自动跟随，
+               所以别在具体规则里再写死 rgba(255,255,255,...) / rgba(0,0,0,...) */
+            --hover-bg: rgba(255, 255, 255, 0.08);
+            --hover-bg-strong: rgba(255, 255, 255, 0.14);
+            --panel-bg: rgba(28, 30, 40, 0.88); /* 下拉、搜索提示、Toast */
+            --panel-bg-soft: rgba(24, 26, 34, 0.78); /* 弹窗 */
+            --chip-bg: rgba(255, 255, 255, 0.12); /* 分类计数、标签小胶囊 */
+            --chip-bg-strong: rgba(255, 255, 255, 0.25);
+            --input-bg: rgba(255, 255, 255, 0.06);
+            --scrim: rgba(5, 6, 10, 0.55); /* 弹窗遮罩 */
+            --count-text: #e9ebf5; /* 分类计数专用文字色，保证暗色下也清晰 */
+            --shadow-soft: rgba(0, 0, 0, 0.2);
+            --shadow-mid: rgba(0, 0, 0, 0.28);
+            --shadow-strong: rgba(0, 0, 0, 0.45);
+            --title-shadow: 0 1px 4px rgba(0, 0, 0, 0.5);
+            --bg-filter: brightness(0.55) saturate(1.1);
+            --bg-overlay-grad: linear-gradient(160deg, rgba(10, 12, 20, 0.35) 0%, rgba(10, 12, 20, 0.65) 100%);
+        }
+
+        /* ===== 浅色主题 ===== */
+        [data-theme="light"] {
+            --glass-bg: rgba(255, 255, 255, 0.58);
+            --glass-bg-strong: rgba(255, 255, 255, 0.78);
+            --glass-border: rgba(18, 24, 48, 0.12);
+            --text: #1b1f2a;
+            --text-dim: rgba(27, 31, 42, 0.66);
+            --accent-glow: rgba(122, 162, 255, 0.35);
+            --hover-bg: rgba(18, 24, 48, 0.07);
+            --hover-bg-strong: rgba(18, 24, 48, 0.13);
+            --panel-bg: rgba(255, 255, 255, 0.94);
+            --panel-bg-soft: rgba(255, 255, 255, 0.92);
+            --chip-bg: rgba(18, 24, 48, 0.1);
+            --chip-bg-strong: rgba(255, 255, 255, 0.55);
+            --input-bg: rgba(255, 255, 255, 0.85);
+            --scrim: rgba(20, 24, 35, 0.35);
+            --count-text: #2b3145;
+            --shadow-soft: rgba(20, 30, 60, 0.1);
+            --shadow-mid: rgba(20, 30, 60, 0.14);
+            --shadow-strong: rgba(20, 30, 60, 0.18);
+            --title-shadow: none;
+            --bg-filter: brightness(0.88) saturate(0.95);
+            --bg-overlay-grad: linear-gradient(160deg, rgba(255, 255, 255, 0.55) 0%, rgba(255, 255, 255, 0.78) 100%);
         }
 
         ::-webkit-scrollbar {
@@ -44,6 +97,7 @@
             overflow: hidden;
             font-family: -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif;
             color: var(--text);
+            transition: color 0.3s ease;
         }
 
         /* ===== 背景 ===== */
@@ -53,14 +107,15 @@
             z-index: -2;
             background-size: cover;
             background-position: center;
-            filter: brightness(0.55) saturate(1.1);
-            transition: opacity 0.6s ease;
+            filter: var(--bg-filter);
+            transition: opacity 0.6s ease, filter 0.3s ease;
         }
         #bg-overlay {
             position: fixed;
             inset: 0;
             z-index: -1;
-            background: linear-gradient(160deg, rgba(10, 12, 20, 0.35) 0%, rgba(10, 12, 20, 0.65) 100%);
+            background: var(--bg-overlay-grad);
+            transition: background 0.3s ease;
         }
 
         /* ===== 新布局：纵向 flex ===== */
@@ -98,7 +153,7 @@
             flex-shrink: 0;
             padding: 0 14px;
             transition: background 0.2s, border-color 0.2s;
-            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.2);
+            box-shadow: 0 8px 30px var(--shadow-soft);
         }
         .topbar .ctrl:hover {
             background: var(--glass-bg-strong);
@@ -127,7 +182,7 @@
             white-space: nowrap;
         }
         .cs-trigger:hover {
-            background: rgba(255, 255, 255, 0.06);
+            background: var(--hover-bg);
         }
         .cs-trigger .arrow {
             font-size: 13px;
@@ -144,12 +199,12 @@
             top: calc(100% + 8px);
             left: 0;
             min-width: 110px;
-            background: rgba(28, 30, 40, 0.88);
+            background: var(--panel-bg);
             border: 1px solid var(--glass-border);
             backdrop-filter: blur(26px) saturate(160%);
             border-radius: 16px;
             padding: 6px;
-            box-shadow: 0 16px 40px rgba(0, 0, 0, 0.45);
+            box-shadow: 0 16px 40px var(--shadow-strong);
             opacity: 0;
             transform: translateY(-6px);
             pointer-events: none;
@@ -170,7 +225,7 @@
             transition: background 0.15s, color 0.15s;
         }
         .cs-option:hover {
-            background: rgba(255, 255, 255, 0.1);
+            background: var(--hover-bg);
             color: var(--text);
         }
         .cs-option.selected {
@@ -191,7 +246,7 @@
             display: flex;
             align-items: center;
             padding: 0 4px 0 0;
-            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.2);
+            box-shadow: 0 8px 30px var(--shadow-soft);
             position: relative;
             z-index: 60;
             flex-shrink: 1;
@@ -236,7 +291,7 @@
             transition: background 0.15s, color 0.15s;
         }
         .search-shell .query-clear:hover {
-            background: rgba(255, 255, 255, 0.1);
+            background: var(--hover-bg);
             color: var(--text);
         }
         .search-shell .query-clear.show {
@@ -273,12 +328,12 @@
             top: calc(100% + 10px);
             left: 0;
             right: 0;
-            background: rgba(28, 30, 40, 0.88);
+            background: var(--panel-bg);
             border: 1px solid var(--glass-border);
             backdrop-filter: blur(28px) saturate(160%);
             border-radius: 16px;
             padding: 6px;
-            box-shadow: 0 16px 40px rgba(0, 0, 0, 0.45);
+            box-shadow: 0 16px 40px var(--shadow-strong);
             opacity: 0;
             transform: translateY(-6px);
             pointer-events: none;
@@ -311,7 +366,7 @@
         }
         .suggest-item:hover,
         .suggest-item.highlight {
-            background: rgba(255, 255, 255, 0.1);
+            background: var(--hover-bg);
             color: var(--text);
         }
 
@@ -329,7 +384,7 @@
             gap: 6px;
             flex-shrink: 0;
             width: 210px;
-            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.2);
+            box-shadow: 0 8px 30px var(--shadow-soft);
         }
         .bm-search-shell .bm-search-icon {
             font-size: 15px;
@@ -369,7 +424,7 @@
             display: flex;
         }
         .bm-search-clear:hover {
-            background: rgba(255, 255, 255, 0.1);
+            background: var(--hover-bg);
             color: var(--text);
         }
 
@@ -390,7 +445,7 @@
             letter-spacing: 0.4px;
             flex-shrink: 0;
             white-space: nowrap;
-            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.2);
+            box-shadow: 0 8px 30px var(--shadow-soft);
         }
 
         /* ---- 操作按钮 (圆形) ---- */
@@ -418,7 +473,7 @@
             flex-shrink: 0;
             color: var(--text);
             transition: background 0.2s, transform 0.2s, color 0.2s, box-shadow 0.2s;
-            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.2);
+            box-shadow: 0 8px 30px var(--shadow-soft);
         }
         .icon-btn:hover {
             background: var(--glass-bg-strong);
@@ -457,7 +512,7 @@
             -webkit-backdrop-filter: blur(22px) saturate(140%);
             border-radius: var(--radius-lg);
             padding: 16px 12px 18px;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.25);
+            box-shadow: 0 8px 32px var(--shadow-mid);
             overflow-y: auto;
             height: 100%;
         }
@@ -482,7 +537,7 @@
             transition: all 0.2s ease;
         }
         .cat-item:hover {
-            background: rgba(255, 255, 255, 0.08);
+            background: var(--hover-bg);
             color: var(--text);
         }
         .cat-item.active {
@@ -498,19 +553,27 @@
         .cat-item-left .iconify {
             font-size: 15px;
         }
-        .cat-count {
-            font-size: 11px;
-            opacity: 0.75;
-            background: rgba(255, 255, 255, 0.12);
-            padding: 1px 8px;
+        /* 分类计数：不再靠 opacity 淡化，改用专用文字色 + 更高对比底色，暗色下也一眼看清 */
+        .cat-item .cat-count {
+            font-size: 11.5px;
+            font-weight: 600;
+            line-height: 1.5;
+            font-variant-numeric: tabular-nums;
+            color: var(--count-text);
+            background: var(--chip-bg);
+            padding: 1px 7px;
+            min-width: 22px;
             border: none; /* 覆盖 daisyUI .badge 的边框 */
             height: auto;
             min-height: 0;
-            border-radius: 10px;
+            border-radius: 8px;
             flex-shrink: 0;
+            transition: background 0.2s, color 0.2s;
         }
         .cat-item.active .cat-count {
-            background: rgba(255, 255, 255, 0.25);
+            background: var(--chip-bg-strong);
+            color: #fff;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.25);
         }
 
         /* ---- 书签内容 ---- */
@@ -565,7 +628,7 @@
             border-color: var(--glass-border);
             backdrop-filter: blur(18px) saturate(140%);
             -webkit-backdrop-filter: blur(18px) saturate(140%);
-            box-shadow: 0 12px 28px rgba(0, 0, 0, 0.3);
+            box-shadow: 0 12px 28px var(--shadow-mid);
         }
 
         .bm-icon {
@@ -600,7 +663,7 @@
             display: -webkit-box;
             -webkit-line-clamp: 2;
             -webkit-box-orient: vertical;
-            text-shadow: 0 1px 4px rgba(0, 0, 0, 0.5);
+            text-shadow: var(--title-shadow);
         }
         .bm-url,
         .bm-tags {
@@ -676,7 +739,7 @@
             border-color: var(--glass-border);
             backdrop-filter: blur(18px) saturate(140%);
             -webkit-backdrop-filter: blur(18px) saturate(140%);
-            box-shadow: 0 8px 22px rgba(0, 0, 0, 0.25);
+            box-shadow: 0 8px 22px var(--shadow-mid);
         }
         .grid.list-view .bm-info {
             flex: 1;
@@ -722,7 +785,7 @@
             opacity: 0.85;
         }
         .grid.list-view .bm-tags span {
-            background: rgba(255, 255, 255, 0.08);
+            background: var(--chip-bg);
             padding: 1px 8px;
             border-radius: 999px;
         }
@@ -742,7 +805,7 @@
         .overlay {
             position: fixed;
             inset: 0;
-            background: rgba(5, 6, 10, 0.55);
+            background: var(--scrim);
             backdrop-filter: blur(6px);
             display: none;
             align-items: center;
@@ -754,13 +817,13 @@
         }
         /* 注意：自定义弹窗类名是 .modal-card，不是 .modal（daisyUI 已占用 .modal，直接复用会冲突） */
         .modal-card {
-            background: rgba(24, 26, 34, 0.78);
+            background: var(--panel-bg-soft);
             border: 1px solid var(--glass-border);
             backdrop-filter: blur(30px) saturate(160%);
             border-radius: var(--radius-lg);
             padding: 28px 30px;
             width: 380px;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+            box-shadow: 0 20px 60px var(--shadow-strong);
             animation: modalIn 0.25s ease;
         }
         @keyframes modalIn {
@@ -789,7 +852,7 @@
         .modal-card textarea {
             width: 100%;
             height: 40px; /* 覆盖 daisyUI .input 的 3rem 高度，保持原尺寸 */
-            background: rgba(255, 255, 255, 0.06);
+            background: var(--input-bg);
             border: 1px solid var(--glass-border);
             border-radius: 10px;
             color: var(--text);
@@ -839,7 +902,7 @@
             box-shadow: 0 4px 16px var(--accent-glow);
         }
         .btn-secondary {
-            background: rgba(255, 255, 255, 0.08);
+            background: var(--chip-bg);
             color: var(--text);
         }
         .btn-danger {
@@ -852,7 +915,7 @@
             filter: brightness(1.1);
         }
         .btn-secondary:hover {
-            background: rgba(255, 255, 255, 0.14);
+            background: var(--hover-bg-strong);
         }
 
         /* ===== Toast ===== */
@@ -868,12 +931,12 @@
         .toast {
             min-width: 220px;
             max-width: 340px;
-            background: rgba(28, 30, 40, 0.88);
+            background: var(--panel-bg);
             border: 1px solid var(--glass-border);
             backdrop-filter: blur(26px) saturate(160%);
             border-radius: 14px;
             padding: 12px 16px;
-            box-shadow: 0 12px 32px rgba(0, 0, 0, 0.4);
+            box-shadow: 0 12px 32px var(--shadow-strong);
             display: flex;
             align-items: flex-start;
             gap: 10px;
@@ -1063,6 +1126,9 @@
                 </button>
                 <button class="icon-btn btn btn-circle tooltip tooltip-bottom" id="viewToggle" data-tip="切换列表 / 卡片视图">
                     <span class="iconify" data-icon="lucide:list"></span>
+                </button>
+                <button class="icon-btn btn btn-circle tooltip tooltip-bottom" id="themeToggle" data-tip="切换到浅色模式">
+                    <span class="iconify" data-icon="lucide:sun"></span>
                 </button>
             </div>
         </div>
@@ -1772,6 +1838,29 @@
         });
 
         updateViewButton();
+
+        /* ============================================================
+           深浅主题切换（只换 <html data-theme>，样式全靠 CSS 变量跟随）
+           ============================================================ */
+        const THEME_KEY = "bm_theme";
+        const themeToggle = document.getElementById("themeToggle");
+
+        function applyTheme(theme) {
+            document.documentElement.dataset.theme = theme;
+            try { localStorage.setItem(THEME_KEY, theme); } catch (e) {}
+            if (!themeToggle) return;
+            const isLight = theme === "light";
+            const icon = themeToggle.querySelector(".iconify");
+            // 暗色时显示太阳（点一下变亮），浅色时显示月亮（点一下变暗）
+            icon.dataset.icon = isLight ? "lucide:moon" : "lucide:sun";
+            themeToggle.dataset.tip = isLight ? "切换到深色模式" : "切换到浅色模式";
+        }
+
+        themeToggle.addEventListener("click", () => {
+            applyTheme(document.documentElement.dataset.theme === "light" ? "dark" : "light");
+        });
+
+        applyTheme(document.documentElement.dataset.theme === "light" ? "light" : "dark");
 
         /* ============================================================
            启动
