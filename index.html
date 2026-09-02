@@ -211,14 +211,21 @@
             padding: 6px;
             box-shadow: 0 16px 40px var(--shadow-strong);
             opacity: 0;
-            transform: translateY(-6px);
             pointer-events: none;
             transition: opacity 0.18s ease, transform 0.18s ease;
-            z-index: 500;
+            z-index: 9999;
+            /* translateZ(0) 强制独立 GPU 层，绕开 iOS backdrop-filter 的层叠怪癖 */
+            transform: translateY(-6px) translateZ(0);
+        }
+        /* 关键：backdrop-filter 让 .custom-select 自成堆叠上下文，
+           内部 z-index 再高也出不去。手机端顶栏是两行，第二行按钮在 DOM 里
+           排后面会盖住下拉，所以展开时要把整个容器抬到第二行之上。 */
+        .custom-select.open {
+            z-index: 80;
         }
         .custom-select.open .cs-options {
             opacity: 1;
-            transform: translateY(0);
+            transform: translateY(0) translateZ(0);
             pointer-events: auto;
         }
         .cs-option {
@@ -340,16 +347,16 @@
             padding: 6px;
             box-shadow: 0 16px 40px var(--shadow-strong);
             opacity: 0;
-            transform: translateY(-6px);
             pointer-events: none;
             transition: opacity 0.16s ease, transform 0.16s ease;
-            z-index: 400;
+            z-index: 9998;
+            transform: translateY(-6px) translateZ(0);
             max-height: 300px;
             overflow-y: auto;
         }
         .suggest-list.show {
             opacity: 1;
-            transform: translateY(0);
+            transform: translateY(0) translateZ(0);
             pointer-events: auto;
         }
         .suggest-item {
@@ -1085,32 +1092,79 @@
             }
             .mobile-filter {
                 display: block;
+                position: relative;
                 flex-shrink: 0;
-                /* 最多占三分之一屏，分类再多也只是内部滚动，不会把书签挤没 */
-                max-height: 34vh;
-                overflow-y: auto;
-                padding: 10px 12px calc(10px + env(safe-area-inset-bottom));
+                /* 默认收起：仅露出手柄 + 当前选中的那一个 chip */
+                max-height: 76px;
+                overflow: hidden;
+                padding: 32px 12px calc(8px + env(safe-area-inset-bottom));
                 background: var(--glass-bg);
                 border: 1px solid var(--glass-border);
                 backdrop-filter: blur(22px) saturate(140%);
                 -webkit-backdrop-filter: blur(22px) saturate(140%);
                 border-radius: var(--radius-lg);
                 box-shadow: 0 8px 32px var(--shadow-mid);
+                transition: max-height 0.32s cubic-bezier(0.4, 0, 0.2, 1);
             }
-            /* daisyUI .filter 默认是横向不换行的 grid，这里改成自动换行的 chip 流 */
+            .mobile-filter.expanded {
+                max-height: 34vh;
+            }
+            /* 滚动放在内层列表上，手柄才不会被内容带着一起滚走 */
+            .mobile-filter.expanded .filter {
+                max-height: calc(34vh - 42px);
+                overflow-y: auto;
+                -webkit-overflow-scrolling: touch;
+                overscroll-behavior: contain;
+            }
+            /* 手柄：顶部居中，带向上箭头（点它或向上滑它都能展开） */
+            .filter-handle {
+                position: absolute;
+                top: 4px;
+                left: 50%;
+                z-index: 2;
+                transform: translateX(-50%);
+                width: 56px;
+                height: 22px;
+                padding: 0;
+                background: transparent;
+                border: none;
+                color: var(--text-dim);
+                cursor: pointer;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                border-radius: 999px;
+                transition: background 0.15s, color 0.15s;
+            }
+            .filter-handle:hover,
+            .filter-handle:active {
+                background: var(--hover-bg);
+                color: var(--text);
+            }
+            .filter-handle .iconify {
+                font-size: 15px;
+                transition: transform 0.3s;
+            }
+            .mobile-filter.expanded .filter-handle .iconify {
+                transform: rotate(180deg);
+            }
+
+            /* 过滤区本体 */
             .mobile-filter .filter {
                 display: flex;
                 flex-wrap: wrap;
                 gap: 6px;
                 align-items: center;
             }
-            .mobile-filter .filter input {
-                appearance: none;
-                -webkit-appearance: none;
+            /* chip 改用 <label> 包裹的方案：避开了 iOS Safari 对 input 伪元素渲染异常
+               导致的"文字重复两遍"bug（daisyUI 原生 filter 用 input + ::before） */
+            .cat-chip {
+                position: relative;
+                display: inline-flex;
+                align-items: center;
                 height: 32px;
-                min-height: 0;
-                margin: 0;
                 padding: 0 12px;
+                margin: 0;
                 border-radius: 999px;
                 font-size: 12.5px;
                 line-height: 1;
@@ -1118,17 +1172,29 @@
                 border: 1px solid var(--glass-border);
                 color: var(--text);
                 flex-shrink: 0;
-                transition: background 0.2s, color 0.2s, border-color 0.2s;
+                cursor: pointer;
+                user-select: none;
+                transition: background 0.2s, color 0.2s, border-color 0.2s, box-shadow 0.2s;
             }
-            /* radio 本身没有文字内容，靠 aria-label 渲染可见文本（daisyUI filter 的玩法） */
-            .mobile-filter .filter input::before {
-                content: attr(aria-label);
+            /* 真·radio 元素绝对定位隐藏，但仍可聚焦、键盘操作、change 事件冒泡 */
+            .cat-chip input[type="radio"] {
+                position: absolute;
+                opacity: 0;
+                pointer-events: none;
+                width: 1px;
+                height: 1px;
+                margin: -1px;
             }
-            .mobile-filter .filter input:checked {
+            /* 选中态：用现代 :has() 选择器匹配当前激活的 chip（iOS 15.4+/Chromium 105+） */
+            .cat-chip:has(input:checked) {
                 background: linear-gradient(135deg, var(--accent), var(--accent2));
                 border-color: transparent;
                 color: #fff;
                 box-shadow: 0 3px 12px var(--accent-glow);
+            }
+            /* 收起时只显示当前选中那一个，其他全部隐藏 */
+            .mobile-filter:not(.expanded) .cat-chip:not(:has(input:checked)) {
+                display: none;
             }
 
             /* --- 顶部栏重排：第一行 引擎+主搜索，第二行 书签搜索+操作按钮 --- */
@@ -1263,8 +1329,13 @@
 
         </div>
 
-        <!-- ===== 手机端：底部分类筛选（daisyUI filter，桌面端隐藏） ===== -->
+        <!-- ===== 手机端：底部分类筛选（daisyUI filter，桌面端隐藏） =====
+             默认收起：只露出手柄和当前选中的那一个分类；
+             点手柄 / 在手柄上向上滑 → 区域向上扩张，露出所有分类。 -->
         <nav class="mobile-filter" id="mobileFilter" aria-label="书签分类筛选">
+            <button class="filter-handle" id="filterHandle" type="button" aria-label="展开分类">
+                <span class="iconify" data-icon="lucide:chevron-up"></span>
+            </button>
             <div class="filter" id="mobileCatFilter"></div>
         </nav>
     </div>
@@ -1994,6 +2065,8 @@
            手机端底部分类筛选（daisyUI filter；宽屏隐藏，不参与交互）
            ============================================================ */
         const mobileCatFilter = document.getElementById("mobileCatFilter");
+        const mobileFilter = document.getElementById("mobileFilter");
+        const filterHandle = document.getElementById("filterHandle");
 
         function renderMobileFilter() {
             if (!mobileCatFilter) return;
@@ -2004,24 +2077,62 @@
                 { key: "__fav__", label: "收藏", count: bookmarks.filter(b => b.favorite).length },
                 ...cats.map(c => ({ key: c, label: c, count: counts[c] })),
             ];
+            // 用 <label> 包裹：避开了 iOS Safari 对 input 伪元素渲染异常
+            // （daisyUI filter 原生用 input + ::before 注入文字，会在 iOS 上重复两遍）
             mobileCatFilter.innerHTML = items
                 .map(
                     it =>
-                        `<input class="btn cat-chip" type="radio" name="bm_cat_filter" ` +
-                        `data-cat="${escapeHtml(it.key)}" aria-label="${escapeHtml(it.label)} ${it.count}"` +
-                        `${activeCategory === it.key ? " checked" : ""} />`
+                        `<label class="cat-chip" data-cat="${escapeHtml(it.key)}">` +
+                        `<input type="radio" name="bm_cat_filter" value="${escapeHtml(it.key)}"` +
+                        `${activeCategory === it.key ? " checked" : ""} />` +
+                        `<span class="cat-chip-text">${escapeHtml(it.label)} ${it.count}</span>` +
+                        `</label>`
                 )
                 .join("");
         }
 
-        // 事件委托：radio 的 change 会冒泡，统一在这里切换分类
+        // 事件委托：radio change 冒泡，统一在这里切换分类
         mobileCatFilter.addEventListener("change", (e) => {
-            const el = e.target;
-            if (!el.dataset || !el.dataset.cat) return;
-            activeCategory = el.dataset.cat;
-            renderSidebar(); // 同步桌面侧边栏高亮（手机上看不见，但切换窗口尺寸时不会错位）
+            const label = e.target.closest(".cat-chip");
+            if (!label || !label.dataset.cat) return;
+            activeCategory = label.dataset.cat;
+            renderSidebar(); // 同步桌面侧边栏高亮
             renderGrid();
             document.getElementById("contentScroll").scrollTo({ top: 0, behavior: "smooth" });
+            // 切完分类后收起抽屉（用户大概率想看书签，不想再被底部条挡）
+            mobileFilter.classList.remove("expanded");
+            syncHandleState();
+        });
+
+        // 手柄交互：点击切换 + 在手柄上向上滑/向下滑也能切换
+        function syncHandleState() {
+            if (!filterHandle) return;
+            const expanded = mobileFilter.classList.contains("expanded");
+            filterHandle.setAttribute("aria-label", expanded ? "收起分类" : "展开分类");
+            filterHandle.setAttribute("aria-expanded", String(expanded));
+            filterHandle.querySelector(".iconify").dataset.icon = expanded ? "lucide:chevron-down" : "lucide:chevron-up";
+        }
+        filterHandle.addEventListener("click", () => {
+            mobileFilter.classList.toggle("expanded");
+            syncHandleState();
+        });
+        // 手柄上的滑动手势：向上滑展开，向下滑收起（阈值 24px，避免误触）
+        let handleTouchY = null;
+        let handleTouchExpanded = false;
+        filterHandle.addEventListener("touchstart", (e) => {
+            handleTouchY = e.touches[0].clientY;
+            handleTouchExpanded = mobileFilter.classList.contains("expanded");
+        }, { passive: true });
+        filterHandle.addEventListener("touchend", (e) => {
+            if (handleTouchY == null) return;
+            const dy = e.changedTouches[0].clientY - handleTouchY;
+            handleTouchY = null;
+            if (Math.abs(dy) < 24) return;
+            const shouldExpand = dy < 0; // 向上为负
+            if (shouldExpand !== handleTouchExpanded) {
+                mobileFilter.classList.toggle("expanded", shouldExpand);
+                syncHandleState();
+            }
         });
 
         /* ============================================================
