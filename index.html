@@ -1093,30 +1093,32 @@
             .mobile-filter {
                 position: relative;
                 flex-shrink: 0;
-                /* 玻璃卡片（参考 1.1.1.1 app 底部抽屉的设计语言）：
-                   顶部居中的大箭头 + 当前分类摘要 + 上滑展开 */
+                /* 玻璃卡片（沿用顶栏视觉语言）：做得小而精。
+                   "更多分类"提示词 + 当前分类摘要，往上一滑展开全部 */
                 background: var(--glass-bg);
                 border: 1px solid var(--glass-border);
                 backdrop-filter: blur(22px) saturate(140%);
                 -webkit-backdrop-filter: blur(22px) saturate(140%);
                 border-radius: var(--radius-lg);
-                box-shadow: 0 8px 32px var(--shadow-mid);
-                padding: 14px 16px calc(8px + env(safe-area-inset-bottom));
+                box-shadow: 0 4px 16px var(--shadow-soft);
+                padding: 10px 16px calc(6px + env(safe-area-inset-bottom));
                 overflow: hidden;
-                max-height: 96px;
+                max-height: 78px;
                 transition: max-height 0.32s cubic-bezier(0.4, 0, 0.2, 1);
             }
             .mobile-filter.expanded {
                 max-height: 34vh;
             }
-            /* 大箭头：顶部居中、明显的"可上滑展开"提示（不是个小按钮） */
+            /* 手柄：顶部居中，箭头 + "更多分类"提示词在同一行——
+               之前只有一个箭头，用户反映"没意识到能上滑" */
             .filter-handle {
                 display: flex;
                 align-items: center;
                 justify-content: center;
+                gap: 6px;
                 width: 100%;
-                height: 28px;
-                margin: 0 0 4px;
+                height: 26px;
+                margin: 0 0 2px;
                 padding: 0;
                 background: transparent;
                 border: none;
@@ -1131,32 +1133,36 @@
                 color: var(--text);
             }
             .filter-handle .iconify {
-                font-size: 20px;
+                font-size: 18px;
                 transition: transform 0.3s;
             }
             .mobile-filter.expanded .filter-handle .iconify {
                 transform: rotate(180deg);
             }
-            /* 摘要行：默认显示当前分类名 + 数量（如"收藏  12"） */
+            .handle-hint {
+                font-size: 13px;
+                letter-spacing: 0.3px;
+            }
+            /* 摘要行：副信息（主提示是上方的"更多分类"，摘要说明当前在哪） */
             .filter-summary {
                 display: flex;
                 align-items: center;
                 justify-content: center;
-                gap: 10px;
-                color: var(--text);
-                font-size: 14px;
+                gap: 8px;
+                color: var(--text-dim);
+                font-size: 13px;
                 font-weight: 500;
             }
             .filter-summary-count {
                 display: inline-flex;
                 align-items: center;
-                min-width: 22px;
-                height: 20px;
-                padding: 0 8px;
+                min-width: 20px;
+                height: 18px;
+                padding: 0 7px;
                 background: var(--chip-bg);
                 border: 1px solid var(--glass-border);
                 border-radius: 999px;
-                font-size: 12px;
+                font-size: 11px;
                 color: var(--text);
                 font-weight: 500;
                 box-sizing: border-box;
@@ -1360,8 +1366,9 @@
              默认收起：只露出手柄和当前选中的那一个分类；
              点手柄 / 在手柄上向上滑 → 区域向上扩张，露出所有分类。 -->
         <nav class="mobile-filter" id="mobileFilter" aria-label="书签分类筛选">
-            <button class="filter-handle" id="filterHandle" type="button" aria-label="展开分类">
+            <button class="filter-handle" id="filterHandle" type="button" aria-label="展开更多分类">
                 <span class="iconify" data-icon="lucide:chevron-up"></span>
+                <span class="handle-hint">更多分类</span>
             </button>
             <div class="filter-summary" id="filterSummary">
                 <span class="filter-summary-label" id="filterSummaryLabel">收藏</span>
