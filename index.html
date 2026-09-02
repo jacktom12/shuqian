@@ -1091,6 +1091,8 @@
                 display: none;
             }
             .mobile-filter {
+                /* 必须 display:block，否则继承桌面端(1025行)的 display:none */
+                display: block;
                 position: relative;
                 flex-shrink: 0;
                 /* 玻璃卡片（沿用顶栏视觉语言）：做得小而精。
