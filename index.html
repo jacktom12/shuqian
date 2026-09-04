@@ -2242,12 +2242,23 @@
            ============================================================ */
         const menuBtn = document.getElementById("menuBtn");
         const menuMask = document.getElementById("menuMask");
+        const topActions = document.getElementById("topActions");
         if (menuBtn && menuMask) {
             menuBtn.addEventListener("click", () => {
                 document.body.classList.toggle("menu-open");
             });
             menuMask.addEventListener("click", () => {
                 document.body.classList.remove("menu-open");
+            });
+        }
+        // 点抽屉里任意功能按钮后自动收起抽屉。
+        // 用事件委托接冒泡：按钮自己的 handler 在 target 阶段已先执行完，
+        // 这里只负责收起抽屉，不影响任何原有功能。
+        if (topActions) {
+            topActions.addEventListener("click", (e) => {
+                if (e.target.closest(".icon-btn")) {
+                    document.body.classList.remove("menu-open");
+                }
             });
         }
 
