@@ -280,6 +280,12 @@
             padding: 0 10px;
             height: 100%;
             min-width: 40px;
+            /* 防御：input 自身也建立独立合成层，避免 iOS Safari
+               在 backdrop-filter 祖先里偶发的"点击不到 input"合成层 bug */
+            position: relative;
+            z-index: 1;
+            -webkit-appearance: none;
+            appearance: none;
         }
         .search-shell input::placeholder {
             color: var(--text-dim);
@@ -399,6 +405,12 @@
             flex-shrink: 0;
             width: 210px;
             box-shadow: 0 8px 30px var(--shadow-soft);
+            /* 必须显式 position + z-index：backdrop-filter 会创建独立合成层，
+               iOS Safari 命中测试需要祖先明确建立层叠上下文，
+               否则 input 会因 GPU 合成层的事件分发 bug 而"无法聚焦"。
+               与 .search-shell（line 262-263）保持同一处理思路。 */
+            position: relative;
+            z-index: 1;
         }
         .bm-search-shell .bm-search-icon {
             font-size: 15px;
@@ -412,9 +424,18 @@
             border: none;
             outline: none;
             color: var(--text);
+            /* 桌面端 13.5px，iOS 上不触发自动缩放（≥16px 才安全），
+               所以下方 600px 媒体查询里统一放大到 16px 兜底 */
             font-size: 13.5px;
             height: 100%;
             min-width: 40px;
+            /* input 自己独立合成层 + 明确 z-index，防御 iOS Safari
+               在 backdrop-filter 容器里"丢失 input 点击事件"的合成层 bug。
+               与 .bm-search-shell 的 position/z-index 配合，命中测试能下钻到 input */
+            position: relative;
+            z-index: 1;
+            -webkit-appearance: none;
+            appearance: none;
         }
         .bm-search-shell input::placeholder {
             color: var(--text-dim);
