@@ -1220,8 +1220,13 @@
             }
 
             /* --- 顶部栏压成一行：引擎 + 主搜索 + 书签搜索 + 菜单按钮 --- */
-            /* 820px 断点让 topbar wrap 成两行，手机上必须 nowrap 压回一行 */
+            /* 去掉 topbar 的 position/z-index，**不创建层叠上下文**——
+               否则里面 fixed 的抽屉 (z-index 300) 也被锁在 topbar 的 z-index:60 笼子里，
+               而 topbar 外的遮罩 z-index 290 在 body 根反而能盖住整顶栏，
+               造成点按钮实际点到遮罩、抽屉看似"失灵" */
             .topbar {
+                position: static;
+                z-index: auto;
                 flex-wrap: nowrap;
                 gap: 8px;
             }
@@ -1393,7 +1398,6 @@
 
             <!-- 书签搜索 -->
             <div class="bm-search-shell">
-                <span class="iconify bm-search-icon" data-icon="lucide:search"></span>
                 <input id="bmSearch" type="text" placeholder="搜索当前书签..." autocomplete="off" />
                 <span class="bm-search-clear btn btn-ghost btn-circle tooltip tooltip-bottom" id="bmSearchClear" data-tip="清除">
                     <svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 50 50" aria-hidden="true">
