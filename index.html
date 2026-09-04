@@ -505,6 +505,15 @@
             box-shadow: 0 4px 16px var(--accent-glow);
             transform: none;
         }
+        /* 抽屉模式下的文字标签：桌面端隐藏 */
+        .icon-btn .btn-label {
+            display: none;
+        }
+        /* 菜单按钮与遮罩：仅手机端显示 */
+        .menu-btn,
+        .menu-mask {
+            display: none;
+        }
 
         /* ===== Main Row (sidebar + content) ===== */
         .main-row {
@@ -1210,18 +1219,112 @@
                 box-shadow: 0 3px 12px var(--accent-glow);
             }
 
-            /* --- 顶部栏重排：第一行 引擎+主搜索，第二行 书签搜索+操作按钮 --- */
+            /* --- 顶部栏压成一行：引擎 + 主搜索 + 书签搜索 + 菜单按钮 --- */
+            /* 820px 断点让 topbar wrap 成两行，手机上必须 nowrap 压回一行 */
+            .topbar {
+                flex-wrap: nowrap;
+                gap: 8px;
+            }
             .search-shell {
-                flex: 1 1 60%;
-                min-width: 120px;
+                flex: 1 1 0;
+                min-width: 0;
             }
             .bm-search-shell {
-                flex: 1 1 90px;
+                flex: 1 1 0;
                 width: auto;
-                min-width: 90px;
+                min-width: 0;
+                /* 框变窄后图标/清除按钮挤占空间，收一点 padding */
+                padding: 0 8px 0 10px;
             }
+            /* iOS Safari 对 font-size < 16px 的输入框聚焦时会自动缩放页面，
+               两个搜索框都放大到 16px 防缩放 */
+            .search-shell input,
+            .bm-search-shell input {
+                font-size: 16px;
+            }
+            /* 引擎下拉收紧，给搜索框腾地方 */
+            .custom-select .cs-trigger {
+                padding: 0 8px 0 10px;
+                font-size: 13px;
+            }
+            /* 功能按钮全部移出顶栏：变身为右侧抽屉 */
             .top-actions {
-                margin-left: auto;
+                position: fixed;
+                top: 0;
+                right: 0;
+                bottom: 0;
+                width: 240px;
+                max-width: 78vw;
+                flex-direction: column;
+                align-items: stretch;
+                gap: 6px;
+                padding: calc(18px + env(safe-area-inset-top)) 12px 20px;
+                background: var(--panel-bg);
+                border-left: 1px solid var(--glass-border);
+                backdrop-filter: blur(28px) saturate(150%);
+                -webkit-backdrop-filter: blur(28px) saturate(150%);
+                box-shadow: -12px 0 40px var(--shadow-strong);
+                transform: translateX(100%);
+                transition: transform 0.32s cubic-bezier(0.32, 0.72, 0, 1);
+                z-index: 300;
+                overflow-y: auto;
+            }
+            body.menu-open .top-actions {
+                transform: translateX(0);
+            }
+            /* 抽屉里按钮变横条：图标 + 文字标签 */
+            .top-actions .icon-btn {
+                width: 100%;
+                height: 46px;
+                min-height: 0;
+                border-radius: 14px;
+                justify-content: flex-start;
+                gap: 12px;
+                padding: 0 14px;
+                font-size: 17px;
+            }
+            .top-actions .icon-btn .btn-label {
+                display: inline;
+                font-size: 14px;
+                font-weight: 500;
+            }
+            /* 菜单按钮：顶栏最右，常驻可见 */
+            .menu-btn {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                width: var(--top-height);
+                height: var(--top-height);
+                min-height: 0;
+                padding: 0;
+                border-radius: 50%;
+                background: var(--glass-bg);
+                border: 1px solid var(--glass-border);
+                backdrop-filter: blur(24px) saturate(150%);
+                -webkit-backdrop-filter: blur(24px) saturate(150%);
+                color: var(--text);
+                font-size: 17px;
+                flex-shrink: 0;
+                cursor: pointer;
+                box-shadow: 0 8px 30px var(--shadow-soft);
+            }
+            .menu-btn:active {
+                background: var(--glass-bg-strong);
+            }
+            /* 遮罩：点击关闭抽屉 */
+            .menu-mask {
+                display: block;
+                position: fixed;
+                inset: 0;
+                background: var(--scrim);
+                opacity: 0;
+                pointer-events: none;
+                transition: opacity 0.3s;
+                z-index: 290;
+            }
+            body.menu-open .menu-mask {
+                opacity: 1;
+                pointer-events: auto;
             }
             .clock {
                 display: none;
@@ -1305,25 +1408,37 @@
             <!-- 时钟 -->
             <div class="clock" id="clock"></div>
 
-            <!-- 操作按钮 -->
-            <div class="top-actions">
+            <!-- 操作按钮（手机端被 CSS 变成右侧抽屉，按钮旁显示文字标签） -->
+            <div class="top-actions" id="topActions">
                 <button class="icon-btn btn btn-circle tooltip tooltip-bottom" id="refreshBg" data-tip="换一张壁纸" aria-label="换一张壁纸">
                     <span class="iconify" data-icon="lucide:refresh-cw"></span>
+                    <span class="btn-label">换一张壁纸</span>
                 </button>
                 <button class="icon-btn btn btn-circle tooltip tooltip-bottom" id="addBtn" data-tip="添加书签" aria-label="添加书签">
                     <span class="iconify" data-icon="lucide:plus"></span>
+                    <span class="btn-label">添加书签</span>
                 </button>
                 <button class="icon-btn btn btn-circle tooltip tooltip-bottom" id="settingsBtn" data-tip="设置 / 编辑模式" aria-label="设置 / 编辑模式">
                     <span class="iconify" data-icon="lucide:settings"></span>
+                    <span class="btn-label">设置 / 编辑模式</span>
                 </button>
                 <button class="icon-btn btn btn-circle tooltip tooltip-bottom" id="viewToggle" data-tip="切换列表 / 卡片视图" aria-label="切换列表 / 卡片视图">
                     <span class="iconify" data-icon="lucide:list"></span>
+                    <span class="btn-label">切换列表 / 卡片视图</span>
                 </button>
                 <button class="icon-btn btn btn-circle tooltip tooltip-bottom" id="themeToggle" data-tip="切换到浅色模式" aria-label="切换主题">
                     <span class="iconify" data-icon="lucide:sun"></span>
+                    <span class="btn-label">切换深色 / 浅色</span>
                 </button>
             </div>
+
+            <!-- 菜单按钮：仅手机端显示，点击把 top-actions 以右侧抽屉形式滑出 -->
+            <button class="menu-btn btn btn-circle" id="menuBtn" type="button" aria-label="打开功能菜单">
+                <span class="iconify" data-icon="lucide:menu"></span>
+            </button>
         </div>
+        <!-- 抽屉遮罩：仅手机端，点击关闭功能菜单 -->
+        <div class="menu-mask" id="menuMask"></div>
 
         <!-- ===== Main Row (sidebar + content) ===== -->
         <div class="main-row">
@@ -2117,6 +2232,20 @@
             mobileFilter.classList.remove("expanded");
             syncHandleState();
         });
+
+        /* ============================================================
+           手机端功能菜单抽屉（≤600px 生效；桌面端按钮原位显示不受影响）
+           ============================================================ */
+        const menuBtn = document.getElementById("menuBtn");
+        const menuMask = document.getElementById("menuMask");
+        if (menuBtn && menuMask) {
+            menuBtn.addEventListener("click", () => {
+                document.body.classList.toggle("menu-open");
+            });
+            menuMask.addEventListener("click", () => {
+                document.body.classList.remove("menu-open");
+            });
+        }
 
         // 手柄交互：点击切换 + 在手柄上向上滑/向下滑也能切换
         function syncHandleState() {
