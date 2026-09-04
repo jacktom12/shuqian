@@ -2,21 +2,19 @@
 <html lang="zh-CN" data-theme="dark">
 <head>
     <meta charset="UTF-8" />
-    <!-- 缺了这行，手机浏览器会按 980px 虚拟宽度缩放渲染，所有响应式断点全部失效 -->
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <title>我的书签</title>
     <link rel="icon" href="https://api.iconify.design/lucide:bookmark-check.svg?color=%237aa2ff" type="image/svg+xml">
-    <script src="https://code.iconify.design/3/3.1.0/iconify.min.js"></script>
-    <!-- 尽早套用上次的主题，避免首屏先闪一下深色再跳浅色 -->
+    <script src="https://code.iconify.design/3/3.1.0/iconify.min.js">
+    </script>
     <script>
-        (function () {
+        (function() {
             try {
                 var t = localStorage.getItem("bm_theme");
                 if (t === "light" || t === "dark") document.documentElement.dataset.theme = t;
             } catch (e) {}
         })();
     </script>
-    <!-- daisyUI 语义化组件库（CDN 完整版，自带 dark/light 主题；放在自定义样式之前，保证下方玻璃拟态样式可覆盖它） -->
     <link href="https://cdn.jsdelivr.net/npm/daisyui@4/dist/full.min.css" rel="stylesheet" type="text/css" />
     <style>
         /* ===== 全局重置 & 变量 ===== */
@@ -36,18 +34,15 @@
             --top-height: 46px;
             --sidebar-width: 170px;
 
-            /* --- 主题派生变量（深色为默认）---
-               深浅切换只改这一组变量，所有控件自动跟随，
-               所以别在具体规则里再写死 rgba(255,255,255,...) / rgba(0,0,0,...) */
             --hover-bg: rgba(255, 255, 255, 0.08);
             --hover-bg-strong: rgba(255, 255, 255, 0.14);
-            --panel-bg: rgba(28, 30, 40, 0.88); /* 下拉、搜索提示、Toast */
-            --panel-bg-soft: rgba(24, 26, 34, 0.78); /* 弹窗 */
-            --chip-bg: rgba(255, 255, 255, 0.12); /* 分类计数、标签小胶囊 */
+            --panel-bg: rgba(28, 30, 40, 0.88);
+            --panel-bg-soft: rgba(24, 26, 34, 0.78);
+            --chip-bg: rgba(255, 255, 255, 0.12);
             --chip-bg-strong: rgba(255, 255, 255, 0.25);
             --input-bg: rgba(255, 255, 255, 0.06);
-            --scrim: rgba(5, 6, 10, 0.55); /* 弹窗遮罩 */
-            --count-text: #e9ebf5; /* 分类计数专用文字色，保证暗色下也清晰 */
+            --scrim: rgba(5, 6, 10, 0.55);
+            --count-text: #e9ebf5;
             --shadow-soft: rgba(0, 0, 0, 0.2);
             --shadow-mid: rgba(0, 0, 0, 0.28);
             --shadow-strong: rgba(0, 0, 0, 0.45);
@@ -56,7 +51,6 @@
             --bg-overlay-grad: linear-gradient(160deg, rgba(10, 12, 20, 0.35) 0%, rgba(10, 12, 20, 0.65) 100%);
         }
 
-        /* ===== 浅色主题 ===== */
         [data-theme="light"] {
             --glass-bg: rgba(255, 255, 255, 0.58);
             --glass-bg-strong: rgba(255, 255, 255, 0.78);
@@ -96,7 +90,6 @@
         body {
             margin: 0;
             height: 100vh;
-            /* 手机浏览器地址栏伸缩时 100vh 会抖，dvh 能动态跟随；老浏览器自动回退 vh */
             height: 100dvh;
             overflow: hidden;
             font-family: -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif;
@@ -104,7 +97,6 @@
             transition: color 0.3s ease;
         }
 
-        /* ===== 背景 ===== */
         #bg {
             position: fixed;
             inset: 0;
@@ -122,7 +114,6 @@
             transition: background 0.3s ease;
         }
 
-        /* ===== 新布局：纵向 flex ===== */
         .layout {
             display: flex;
             flex-direction: column;
@@ -143,7 +134,6 @@
             z-index: 60;
         }
 
-        /* ---- 统一顶部控件样式 ---- */
         .topbar .ctrl {
             height: var(--top-height);
             border-radius: 999px;
@@ -164,7 +154,7 @@
             background: var(--glass-bg-strong);
         }
 
-        /* ---- 搜索引擎下拉 (左) ---- */
+        /* ---- 搜索引擎下拉 ---- */
         .custom-select {
             position: relative;
             flex-shrink: 0;
@@ -214,12 +204,8 @@
             pointer-events: none;
             transition: opacity 0.18s ease, transform 0.18s ease;
             z-index: 9999;
-            /* translateZ(0) 强制独立 GPU 层，绕开 iOS backdrop-filter 的层叠怪癖 */
             transform: translateY(-6px) translateZ(0);
         }
-        /* 关键：backdrop-filter 让 .custom-select 自成堆叠上下文，
-           内部 z-index 再高也出不去。手机端顶栏是两行，第二行按钮在 DOM 里
-           排后面会盖住下拉，所以展开时要把整个容器抬到第二行之上。 */
         .custom-select.open {
             z-index: 80;
         }
@@ -245,7 +231,7 @@
             color: #fff;
         }
 
-        /* ---- 搜索输入框 (中间, 弹性) ---- */
+        /* ---- ★ 主搜索框 (输入框 + 内嵌按钮) ---- */
         .search-shell {
             flex: 1;
             min-width: 120px;
@@ -257,7 +243,7 @@
             -webkit-backdrop-filter: blur(24px) saturate(150%);
             display: flex;
             align-items: center;
-            padding: 0 4px 0 0;
+            padding: 0 6px 0 0;
             box-shadow: 0 8px 30px var(--shadow-soft);
             position: relative;
             z-index: 60;
@@ -269,6 +255,7 @@
             height: 100%;
             display: flex;
             align-items: center;
+            min-width: 0;
         }
         .search-shell input {
             flex: 1;
@@ -280,8 +267,6 @@
             padding: 0 10px;
             height: 100%;
             min-width: 40px;
-            /* 防御：input 自身也建立独立合成层，避免 iOS Safari
-               在 backdrop-filter 祖先里偶发的"点击不到 input"合成层 bug */
             position: relative;
             z-index: 1;
             -webkit-appearance: none;
@@ -291,12 +276,12 @@
             color: var(--text-dim);
         }
 
-        /* 主搜索清除按钮 */
+        /* 清除按钮 (内嵌) */
         .search-shell .query-clear {
             flex-shrink: 0;
             width: 28px;
             height: 28px;
-            min-height: 0; /* 覆盖 daisyUI .btn 的 min-height */
+            min-height: 0;
             padding: 0;
             border-radius: 50%;
             display: none;
@@ -305,8 +290,10 @@
             cursor: pointer;
             color: var(--text-dim);
             font-size: 15px;
-            margin-right: 2px;
+            margin: 0 2px;
             transition: background 0.15s, color 0.15s;
+            background: transparent;
+            border: none;
         }
         .search-shell .query-clear:hover {
             background: var(--hover-bg);
@@ -316,14 +303,14 @@
             display: flex;
         }
 
-        /* 搜索按钮 */
+        /* 搜索按钮 (内嵌) */
         .search-shell .go-btn {
             flex-shrink: 0;
             width: 32px;
-            height: 100%;
-            min-height: 0; /* 覆盖 daisyUI .btn 的 min-height */
+            height: 32px;
+            min-height: 0;
             padding: 0;
-            border-radius: 0;
+            border-radius: 50%;
             background: transparent;
             border: none;
             color: var(--text-dim);
@@ -332,14 +319,15 @@
             justify-content: center;
             cursor: pointer;
             font-size: 16px;
-            /* 取消原来的 8px margin-right：之前 go-btn 离主搜索框右边太远，
-               加上框的 4px padding 一共 12px，视觉上像游离在两个框之间的空白处 */
-            margin-right: 0;
-            transition: color 0.2s, transform 0.15s;
+            margin: 0 4px 0 2px;
+            transition: color 0.2s, background 0.2s;
         }
         .search-shell .go-btn:hover {
+            background: var(--hover-bg);
             color: var(--text);
-            transform: scale(1.1);
+        }
+        .search-shell .go-btn:active {
+            transform: scale(0.92);
         }
 
         /* ---- 搜索提示 ---- */
@@ -390,7 +378,7 @@
             color: var(--text);
         }
 
-        /* ---- 书签搜索 (固定宽度) ---- */
+        /* ---- ★ 书签搜索框 (内嵌清除) ---- */
         .bm-search-shell {
             height: var(--top-height);
             border-radius: 999px;
@@ -400,23 +388,13 @@
             -webkit-backdrop-filter: blur(24px) saturate(150%);
             display: flex;
             align-items: center;
-            padding: 0 12px 0 14px;
-            gap: 6px;
+            padding: 0 6px 0 14px;
+            gap: 4px;
             flex-shrink: 0;
             width: 210px;
             box-shadow: 0 8px 30px var(--shadow-soft);
-            /* 必须显式 position + z-index：backdrop-filter 会创建独立合成层，
-               iOS Safari 命中测试需要祖先明确建立层叠上下文，
-               否则 input 会因 GPU 合成层的事件分发 bug 而"无法聚焦"。
-               与 .search-shell（line 262-263）保持同一处理思路。 */
             position: relative;
             z-index: 1;
-        }
-        .bm-search-shell .bm-search-icon {
-            font-size: 15px;
-            color: var(--text-dim);
-            flex-shrink: 0;
-            display: flex;
         }
         .bm-search-shell input {
             flex: 1;
@@ -424,36 +402,34 @@
             border: none;
             outline: none;
             color: var(--text);
-            /* 桌面端 13.5px，iOS 上不触发自动缩放（≥16px 才安全），
-               所以下方 600px 媒体查询里统一放大到 16px 兜底 */
             font-size: 13.5px;
             height: 100%;
             min-width: 40px;
-            /* input 自己独立合成层 + 明确 z-index，防御 iOS Safari
-               在 backdrop-filter 容器里"丢失 input 点击事件"的合成层 bug。
-               与 .bm-search-shell 的 position/z-index 配合，命中测试能下钻到 input */
             position: relative;
             z-index: 1;
             -webkit-appearance: none;
             appearance: none;
+            pointer-events: auto;
         }
         .bm-search-shell input::placeholder {
             color: var(--text-dim);
         }
         .bm-search-clear {
+            flex-shrink: 0;
+            width: 28px;
+            height: 28px;
+            min-height: 0;
+            padding: 0;
+            border-radius: 50%;
             cursor: pointer;
             color: var(--text-dim);
             font-size: 15px;
-            width: 22px;
-            height: 22px;
-            min-height: 0; /* 覆盖 daisyUI .btn 的 min-height */
-            padding: 0;
-            border-radius: 50%;
-            transition: background 0.15s, color 0.15s;
             display: none;
             align-items: center;
             justify-content: center;
-            flex-shrink: 0;
+            transition: background 0.15s, color 0.15s;
+            background: transparent;
+            border: none;
         }
         .bm-search-clear.show {
             display: flex;
@@ -483,7 +459,7 @@
             box-shadow: 0 8px 30px var(--shadow-soft);
         }
 
-        /* ---- 操作按钮 (圆形) ---- */
+        /* ---- 操作按钮 ---- */
         .top-actions {
             display: flex;
             gap: 8px;
@@ -493,7 +469,7 @@
         .icon-btn {
             width: var(--top-height);
             height: var(--top-height);
-            min-height: 0; /* 覆盖 daisyUI .btn 的 min-height */
+            min-height: 0;
             padding: 0;
             border-radius: 50%;
             background: var(--glass-bg);
@@ -513,7 +489,6 @@
         .icon-btn:hover {
             background: var(--glass-bg-strong);
         }
-        /* 旋转动效挪到内部图标上，避免 daisyUI tooltip 跟着一起倾斜 */
         .icon-btn .iconify {
             display: inline-flex;
             transition: transform 0.2s;
@@ -528,17 +503,15 @@
             box-shadow: 0 4px 16px var(--accent-glow);
             transform: none;
         }
-        /* 抽屉模式下的文字标签：桌面端隐藏 */
         .icon-btn .btn-label {
             display: none;
         }
-        /* 菜单按钮与遮罩：仅手机端显示 */
         .menu-btn,
         .menu-mask {
             display: none;
         }
 
-        /* ===== Main Row (sidebar + content) ===== */
+        /* ===== Main Row ===== */
         .main-row {
             display: flex;
             flex: 1;
@@ -597,7 +570,6 @@
         .cat-item-left .iconify {
             font-size: 15px;
         }
-        /* 分类计数：不再靠 opacity 淡化，改用专用文字色 + 更高对比底色，暗色下也一眼看清 */
         .cat-item .cat-count {
             font-size: 11.5px;
             font-weight: 600;
@@ -607,7 +579,7 @@
             background: var(--chip-bg);
             padding: 1px 7px;
             min-width: 22px;
-            border: none; /* 覆盖 daisyUI .badge 的边框 */
+            border: none;
             height: auto;
             min-height: 0;
             border-radius: 8px;
@@ -761,7 +733,7 @@
             font-size: 14px;
         }
 
-        /* ===== 书签视图切换（列表模式） ===== */
+        /* ===== 列表视图 ===== */
         .grid.list-view {
             display: flex;
             flex-direction: column;
@@ -859,7 +831,6 @@
         .overlay.show {
             display: flex;
         }
-        /* 注意：自定义弹窗类名是 .modal-card，不是 .modal（daisyUI 已占用 .modal，直接复用会冲突） */
         .modal-card {
             background: var(--panel-bg-soft);
             border: 1px solid var(--glass-border);
@@ -890,12 +861,12 @@
             color: var(--text-dim);
             display: block;
             margin: 12px 0 5px;
-            padding: 0; /* 覆盖 daisyUI .label 的默认内边距 */
+            padding: 0;
         }
         .modal-card input:not([type="checkbox"]),
         .modal-card textarea {
             width: 100%;
-            height: 40px; /* 覆盖 daisyUI .input 的 3rem 高度，保持原尺寸 */
+            height: 40px;
             background: var(--input-bg);
             border: 1px solid var(--glass-border);
             border-radius: 10px;
@@ -928,7 +899,7 @@
             border-radius: 50%;
             width: 40px;
             height: 40px;
-            min-height: 0; /* 覆盖 daisyUI .btn 的 min-height */
+            min-height: 0;
             padding: 0;
             display: flex;
             align-items: center;
@@ -1024,24 +995,16 @@
             }
         }
 
-        /* ===== 触摸设备适配 =====
-           手机没有 hover，凡是依赖 :hover 的交互都会出问题，这里统一兜底 */
-        /* 1) 关掉 daisyUI tooltip：点一下按钮后 hover 状态会一直粘着，提示词不会自己消失 */
-        @media (hover: none), (any-hover: none) {
+        /* ===== 触摸设备适配 ===== */
+        @media (hover: none),
+        (any-hover: none) {
             .tooltip::before,
             .tooltip::after {
                 content: none !important;
             }
-        }
-        /* 2) 编辑模式下常驻显示卡片操作按钮（原本要 hover 卡片才出现，手机上永远不会触发） */
-        @media (hover: none), (any-hover: none) {
             body.edit-mode .bm-actions {
                 display: flex !important;
             }
-        }
-        /* 3) 触摸设备上 :hover 会一直粘着，按钮点了就歪着不回来，改用 :active 做点击反馈
-              注意排除 .active，否则编辑模式 / 列表视图的紫色高亮会被覆盖掉 */
-        @media (hover: none), (any-hover: none) {
             .icon-btn:not(.active):hover {
                 background: var(--glass-bg);
             }
@@ -1053,9 +1016,9 @@
             }
         }
 
-        /* ===== 手机端：底部分类筛选（daisyUI filter）===== */
+        /* ===== 手机端底部分类 ===== */
         .mobile-filter {
-            display: none; /* 桌面端完全不占位 */
+            display: none;
         }
 
         /* ===== 响应式 ===== */
@@ -1098,8 +1061,9 @@
                 margin-left: 8px;
             }
         }
+
         @media (max-width: 600px) {
-            /* --- Toast 改到顶部居中通栏：缩在右上角容易被按钮群盖住、一闪而过看不见 --- */
+            /* --- Toast 通栏 --- */
             #toastWrap {
                 top: 12px;
                 left: 16px;
@@ -1111,24 +1075,20 @@
                 max-width: 100%;
                 width: 100%;
             }
-            /* 手指点击区域放大 */
             .bm-actions span {
                 width: 30px;
                 height: 30px;
                 font-size: 15px;
             }
 
-            /* --- 侧边栏让位，分类改到底部 filter 条 --- */
+            /* --- 侧边栏隐藏，底部 filter 出现 --- */
             .sidebar {
                 display: none;
             }
             .mobile-filter {
-                /* 必须 display:block，否则继承桌面端(1025行)的 display:none */
                 display: block;
                 position: relative;
                 flex-shrink: 0;
-                /* 1.1.1.1 风格 peek 卡片：收起态只露"箭头 + 更多分类"两行，
-                   上滑/点击展开全部 chip。卡片保持小，空间让给书签列表 */
                 background: var(--glass-bg);
                 border: 1px solid var(--glass-border);
                 backdrop-filter: blur(22px) saturate(140%);
@@ -1143,7 +1103,6 @@
             .mobile-filter.expanded {
                 max-height: 34vh;
             }
-            /* 手柄：垂直排列——上箭头 + "更多分类"主标题，整行可点可滑 */
             .filter-handle {
                 display: flex;
                 flex-direction: column;
@@ -1177,7 +1136,6 @@
                 font-weight: 600;
                 letter-spacing: 0.3px;
             }
-            /* chip 网格：收起时不占布局，展开时随高度动画 + 轻微淡入 */
             .mobile-filter:not(.expanded) .filter {
                 display: none;
             }
@@ -1194,19 +1152,22 @@
                 animation: filterFadeIn 0.28s ease 0.08s both;
             }
             @keyframes filterFadeIn {
-                from { opacity: 0; transform: translateY(6px); }
-                to   { opacity: 1; transform: translateY(0); }
+                from {
+                    opacity: 0;
+                    transform: translateY(6px);
+                }
+                to {
+                    opacity: 1;
+                    transform: translateY(0);
+                }
             }
 
-            /* 过滤区本体 */
             .mobile-filter .filter {
                 display: flex;
                 flex-wrap: wrap;
                 gap: 6px;
                 align-items: center;
             }
-            /* chip 改用 <label> 包裹的方案：避开了 iOS Safari 对 input 伪元素渲染异常
-               导致的"文字重复两遍"bug（daisyUI 原生 filter 用 input + ::before） */
             .cat-chip {
                 position: relative;
                 display: inline-flex;
@@ -1225,7 +1186,6 @@
                 user-select: none;
                 transition: background 0.2s, color 0.2s, border-color 0.2s, box-shadow 0.2s;
             }
-            /* 真·radio 元素绝对定位隐藏，但仍可聚焦、键盘操作、change 事件冒泡 */
             .cat-chip input[type="radio"] {
                 position: absolute;
                 opacity: 0;
@@ -1234,7 +1194,6 @@
                 height: 1px;
                 margin: -1px;
             }
-            /* 选中态：用现代 :has() 选择器匹配当前激活的 chip（iOS 15.4+/Chromium 105+） */
             .cat-chip:has(input:checked) {
                 background: linear-gradient(135deg, var(--accent), var(--accent2));
                 border-color: transparent;
@@ -1242,40 +1201,79 @@
                 box-shadow: 0 3px 12px var(--accent-glow);
             }
 
-            /* --- 顶部栏压成一行：引擎 + 主搜索 + 书签搜索 + 菜单按钮 --- */
-            /* 去掉 topbar 的 position/z-index，**不创建层叠上下文**——
-               否则里面 fixed 的抽屉 (z-index 300) 也被锁在 topbar 的 z-index:60 笼子里，
-               而 topbar 外的遮罩 z-index 290 在 body 根反而能盖住整顶栏，
-               造成点按钮实际点到遮罩、抽屉看似"失灵" */
+            /* --- ★ 手机端顶栏：紧凑 + z-index 修复 --- */
             .topbar {
                 position: static;
                 z-index: auto;
                 flex-wrap: nowrap;
-                gap: 8px;
+                gap: 6px;
             }
+
+            /* 引擎下拉更小 */
+            .custom-select .cs-trigger {
+                padding: 0 6px 0 8px;
+                font-size: 12px;
+            }
+            .custom-select .cs-trigger .arrow {
+                font-size: 11px;
+            }
+
+            /* ★ 主搜索框：缩小，z-index 降低让书签搜索可点 */
             .search-shell {
-                flex: 1 1 0;
-                min-width: 0;
+                flex: 1 1 40%;
+                min-width: 60px;
+                z-index: 1;
+                padding: 0 4px 0 0;
             }
+            .search-shell input {
+                font-size: 16px;
+                padding: 0 6px;
+            }
+            .search-shell .query-clear {
+                width: 22px;
+                height: 22px;
+                font-size: 13px;
+                margin: 0 1px;
+            }
+            .search-shell .go-btn {
+                width: 28px;
+                height: 28px;
+                font-size: 14px;
+                margin: 0 2px;
+            }
+
+            /* ★ 书签搜索：提升 z-index 保证可点，宽度自适应 */
             .bm-search-shell {
-                flex: 1 1 0;
+                flex: 0 1 32%;
+                min-width: 50px;
                 width: auto;
-                min-width: 0;
-                /* 框变窄后图标/清除按钮挤占空间，收一点 padding */
-                padding: 0 8px 0 10px;
+                padding: 0 6px 0 10px;
+                gap: 2px;
+                z-index: 2;
             }
-            /* iOS Safari 对 font-size < 16px 的输入框聚焦时会自动缩放页面，
-               两个搜索框都放大到 16px 防缩放 */
-            .search-shell input,
             .bm-search-shell input {
                 font-size: 16px;
+                padding: 0 4px;
+                pointer-events: auto;
+                z-index: 2;
             }
-            /* 引擎下拉收紧，给搜索框腾地方 */
-            .custom-select .cs-trigger {
-                padding: 0 8px 0 10px;
+            .bm-search-clear {
+                width: 22px;
+                height: 22px;
                 font-size: 13px;
             }
-            /* 功能按钮全部移出顶栏：变身为右侧抽屉 */
+
+            /* 提示列表保持上层 */
+            .suggest-list {
+                z-index: 9998;
+            }
+
+            /* 时钟隐藏 */
+            .clock {
+                display: none;
+            }
+
+            /* --- 功能抽屉 --- */
             .top-actions {
                 position: fixed;
                 top: 0;
@@ -1300,7 +1298,6 @@
             body.menu-open .top-actions {
                 transform: translateX(0);
             }
-            /* 抽屉里按钮变横条：图标 + 文字标签 */
             .top-actions .icon-btn {
                 width: 100%;
                 height: 46px;
@@ -1316,7 +1313,7 @@
                 font-size: 14px;
                 font-weight: 500;
             }
-            /* 菜单按钮：顶栏最右，常驻可见 */
+
             .menu-btn {
                 display: flex;
                 align-items: center;
@@ -1339,7 +1336,6 @@
             .menu-btn:active {
                 background: var(--glass-bg-strong);
             }
-            /* 遮罩：点击关闭抽屉 */
             .menu-mask {
                 display: block;
                 position: fixed;
@@ -1354,9 +1350,8 @@
                 opacity: 1;
                 pointer-events: auto;
             }
-            .clock {
-                display: none;
-            }
+
+            /* 书签网格 */
             .grid {
                 grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
                 gap: 10px;
@@ -1381,7 +1376,7 @@
     <!-- ===== 布局 ===== -->
     <div class="layout">
 
-        <!-- ===== Topbar (全宽) ===== -->
+        <!-- ===== Topbar ===== -->
         <div class="topbar">
 
             <!-- 搜索引擎下拉 -->
@@ -1400,29 +1395,29 @@
                 </div>
             </div>
 
-            <!-- 搜索框 -->
+            <!-- ★ 主搜索框 (go 按钮已内嵌) -->
             <div class="search-shell">
                 <div class="suggest-wrap">
                     <input id="query" type="text" placeholder="搜索..." autofocus autocomplete="off" />
+                    <span class="query-clear" id="queryClear" data-tip="清除">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 50 50" aria-hidden="true">
+                            <path d="M0 0h50v50H0z" fill="none" />
+                            <path fill="currentColor" d="M25 42c-9.4 0-17-7.6-17-17S15.6 8 25 8s17 7.6 17 17s-7.6 17-17 17m0-32c-8.3 0-15 6.7-15 15s6.7 15 15 15s15-6.7 15-15s-6.7-15-15-15" />
+                            <path fill="currentColor" d="m32.283 16.302l1.414 1.415l-15.98 15.98l-1.414-1.414z" />
+                            <path fill="currentColor" d="m17.717 16.302l15.98 15.98l-1.414 1.415l-15.98-15.98z" />
+                        </svg>
+                    </span>
+                    <button class="go-btn" id="go" aria-label="搜索">
+                        <span class="iconify" data-icon="lucide:search"></span>
+                    </button>
                     <div class="suggest-list" id="suggestList"></div>
                 </div>
-                <span class="query-clear btn btn-ghost btn-circle tooltip tooltip-bottom" id="queryClear" data-tip="清除">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 50 50" aria-hidden="true">
-                        <path d="M0 0h50v50H0z" fill="none" />
-                        <path fill="currentColor" d="M25 42c-9.4 0-17-7.6-17-17S15.6 8 25 8s17 7.6 17 17s-7.6 17-17 17m0-32c-8.3 0-15 6.7-15 15s6.7 15 15 15s15-6.7 15-15s-6.7-15-15-15" />
-                        <path fill="currentColor" d="m32.283 16.302l1.414 1.415l-15.98 15.98l-1.414-1.414z" />
-                        <path fill="currentColor" d="m17.717 16.302l15.98 15.98l-1.414 1.415l-15.98-15.98z" />
-                    </svg>
-                </span>
-                <button class="go-btn btn btn-ghost btn-circle tooltip tooltip-bottom" id="go" data-tip="搜索" aria-label="搜索">
-                    <span class="iconify" data-icon="lucide:search"></span>
-                </button>
             </div>
 
-            <!-- 书签搜索 -->
-            <div class="bm-search-shell">
-                <input id="bmSearch" type="text" placeholder="搜索当前书签..." autocomplete="off" />
-                <span class="bm-search-clear btn btn-ghost btn-circle tooltip tooltip-bottom" id="bmSearchClear" data-tip="清除">
+            <!-- ★ 书签搜索框 (清除按钮内嵌) -->
+            <div class="bm-search-shell" id="bmSearchShell">
+                <input id="bmSearch" type="text" placeholder="搜书签..." autocomplete="off" />
+                <span class="bm-search-clear" id="bmSearchClear" data-tip="清除">
                     <svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 50 50" aria-hidden="true">
                         <path d="M0 0h50v50H0z" fill="none" />
                         <path fill="currentColor" d="M25 42c-9.4 0-17-7.6-17-17S15.6 8 25 8s17 7.6 17 17s-7.6 17-17 17m0-32c-8.3 0-15 6.7-15 15s6.7 15 15 15s15-6.7 15-15s-6.7-15-15-15" />
@@ -1435,7 +1430,7 @@
             <!-- 时钟 -->
             <div class="clock" id="clock"></div>
 
-            <!-- 操作按钮（手机端被 CSS 变成右侧抽屉，按钮旁显示文字标签） -->
+            <!-- 操作按钮 -->
             <div class="top-actions" id="topActions">
                 <button class="icon-btn btn btn-circle tooltip tooltip-bottom" id="refreshBg" data-tip="换一张壁纸" aria-label="换一张壁纸">
                     <span class="iconify" data-icon="lucide:refresh-cw"></span>
@@ -1459,23 +1454,23 @@
                 </button>
             </div>
 
-            <!-- 菜单按钮：仅手机端显示，点击把 top-actions 以右侧抽屉形式滑出 -->
+            <!-- 菜单按钮 (手机端) -->
             <button class="menu-btn btn btn-circle" id="menuBtn" type="button" aria-label="打开功能菜单">
                 <span class="iconify" data-icon="lucide:menu"></span>
             </button>
         </div>
-        <!-- 抽屉遮罩：仅手机端，点击关闭功能菜单 -->
+        <!-- 抽屉遮罩 -->
         <div class="menu-mask" id="menuMask"></div>
 
-        <!-- ===== Main Row (sidebar + content) ===== -->
+        <!-- ===== Main Row ===== -->
         <div class="main-row">
 
-            <!-- 左侧分类栏（桌面端显示，手机端隐藏） -->
+            <!-- 左侧分类栏 -->
             <div class="sidebar" id="sidebar">
                 <div id="catList"></div>
             </div>
 
-            <!-- 右侧书签列表 -->
+            <!-- 书签列表 -->
             <div class="content-scroll" id="contentScroll">
                 <div id="sectionTitle" class="section-title">★ 收藏</div>
                 <div class="grid" id="grid"></div>
@@ -1484,9 +1479,7 @@
 
         </div>
 
-        <!-- ===== 手机端：底部分类筛选（daisyUI filter，桌面端隐藏） =====
-             默认收起：只露出手柄和当前选中的那一个分类；
-             点手柄 / 在手柄上向上滑 → 区域向上扩张，露出所有分类。 -->
+        <!-- ===== 手机端底部分类 ===== -->
         <nav class="mobile-filter" id="mobileFilter" aria-label="书签分类筛选">
             <button class="filter-handle" id="filterHandle" type="button" aria-label="展开更多分类">
                 <span class="iconify" data-icon="lucide:chevron-up"></span>
@@ -1639,16 +1632,12 @@
 
         csOptions.querySelectorAll(".cs-option").forEach(opt => {
             opt.addEventListener("click", () => {
-                // 先保存当前引擎关键词
                 engineQueryCache[currentEngine] = queryInput.value;
-
                 currentEngine = opt.dataset.value;
                 csLabel.textContent = opt.textContent;
                 csOptions.querySelectorAll(".cs-option").forEach(o => o.classList.remove("selected"));
                 opt.classList.add("selected");
                 engineSelect.classList.remove("open");
-
-                // 恢复目标引擎上次关键词（没有则为空）
                 setQueryForEngine(currentEngine, true);
             });
         });
@@ -1760,7 +1749,6 @@
            编辑模式
            ============================================================ */
         let isEditMode = false;
-        // 触摸设备没有 hover，编辑按钮是常驻显示的，提示文案要告诉用户点哪儿
         const isTouchDevice = window.matchMedia("(hover: none), (any-hover: none)").matches;
         document.getElementById("settingsBtn").addEventListener("click", () => {
             requirePassword(() => {
@@ -1779,8 +1767,8 @@
         });
         const stylePatch = document.createElement("style");
         stylePatch.textContent = `
-            body.edit-mode .bm-card:hover .bm-actions { display: flex !important; }
-        `;
+                body.edit-mode .bm-card:hover .bm-actions { display: flex !important; }
+            `;
         document.head.appendChild(stylePatch);
 
         /* ============================================================
@@ -1944,7 +1932,7 @@
         let bookmarks = [];
         let activeCategory = "__fav__";
         let searchKeyword = "";
-        let viewMode = localStorage.getItem("bm_view_mode") || "grid"; // grid 卡片视图 | list 列表视图
+        let viewMode = localStorage.getItem("bm_view_mode") || "grid";
 
         async function loadBookmarks() {
             try {
@@ -1981,18 +1969,18 @@
             const catList = document.getElementById("catList");
             const cats = Object.keys(counts).sort((a, b) => counts[b] - counts[a]);
             let html = `<div class="cat-item ${activeCategory === "__all__" ? "active" : ""}" data-cat="__all__">
-                    <div class="cat-item-left"><span class="iconify" data-icon="lucide:layout-grid"></span><span>全部</span></div>
-                    <span class="cat-count badge badge-sm">${bookmarks.length}</span>
-                </div>`;
+                        <div class="cat-item-left"><span class="iconify" data-icon="lucide:layout-grid"></span><span>全部</span></div>
+                        <span class="cat-count badge badge-sm">${bookmarks.length}</span>
+                    </div>`;
             html += `<div class="cat-item ${activeCategory === "__fav__" ? "active" : ""}" data-cat="__fav__">
-                    <div class="cat-item-left"><span class="iconify" data-icon="lucide:star"></span><span>收藏</span></div>
-                    <span class="cat-count badge badge-sm">${bookmarks.filter(b => b.favorite).length}</span>
-                </div>`;
+                        <div class="cat-item-left"><span class="iconify" data-icon="lucide:star"></span><span>收藏</span></div>
+                        <span class="cat-count badge badge-sm">${bookmarks.filter(b => b.favorite).length}</span>
+                    </div>`;
             cats.forEach(cat => {
                 html += `<div class="cat-item ${activeCategory === cat ? "active" : ""}" data-cat="${escapeHtml(cat)}">
-                        <div class="cat-item-left"><span class="iconify" data-icon="lucide:folder"></span><span>${escapeHtml(cat)}</span></div>
-                        <span class="cat-count badge badge-sm">${counts[cat]}</span>
-                    </div>`;
+                            <div class="cat-item-left"><span class="iconify" data-icon="lucide:folder"></span><span>${escapeHtml(cat)}</span></div>
+                            <span class="cat-count badge badge-sm">${counts[cat]}</span>
+                        </div>`;
             });
             catList.innerHTML = html;
             catList.querySelectorAll(".cat-item").forEach(el => {
@@ -2003,13 +1991,12 @@
                     document.getElementById("contentScroll").scrollTo({ top: 0, behavior: "smooth" });
                 });
             });
-            renderMobileFilter(); // 桌面点分类时同步底部 chip 的选中态
+            renderMobileFilter();
         }
 
         function renderGrid() {
             const grid = document.getElementById("grid");
             const sectionTitle = document.getElementById("sectionTitle");
-            // 根据视图模式切换 list-view 类
             grid.classList.toggle("list-view", viewMode === "list");
 
             let list = bookmarks;
@@ -2047,18 +2034,18 @@
                     card.href = bm.url;
                     card.target = "_blank";
                     card.innerHTML = `
-                            ${bm.favorite ? '<span class="iconify fav-badge" data-icon="lucide:star" style="fill:currentColor;"></span>' : ""}
-                            <span class="bm-actions">
-                                <span data-act="edit"><span class="iconify" data-icon="lucide:edit-2"></span></span>
-                                <span data-act="del"><span class="iconify" data-icon="lucide:trash-2"></span></span>
-                            </span>
-                            <div class="bm-icon"><img src="${favicon(bm.url)}" onerror="this.style.display='none'"/></div>
-                            <div class="bm-info">
-                                <div class="bm-title">${escapeHtml(bm.title || bm.url)}</div>
-                                <div class="bm-url">${escapeHtml(bm.url)}</div>
-                                ${bm.tags && bm.tags.length ? `<div class="bm-tags">${bm.tags.map(t => `<span>${escapeHtml(t)}</span>`).join("")}</div>` : ""}
-                            </div>
-                        `;
+                                ${bm.favorite ? '<span class="iconify fav-badge" data-icon="lucide:star" style="fill:currentColor;"></span>' : ""}
+                                <span class="bm-actions">
+                                    <span data-act="edit"><span class="iconify" data-icon="lucide:edit-2"></span></span>
+                                    <span data-act="del"><span class="iconify" data-icon="lucide:trash-2"></span></span>
+                                </span>
+                                <div class="bm-icon"><img src="${favicon(bm.url)}" onerror="this.style.display='none'"/></div>
+                                <div class="bm-info">
+                                    <div class="bm-title">${escapeHtml(bm.title || bm.url)}</div>
+                                    <div class="bm-url">${escapeHtml(bm.url)}</div>
+                                    ${bm.tags && bm.tags.length ? `<div class="bm-tags">${bm.tags.map(t => `<span>${escapeHtml(t)}</span>`).join("")}</div>` : ""}
+                                </div>
+                            `;
                     card.querySelector('[data-act="edit"]').addEventListener("click", ev => {
                         ev.preventDefault();
                         ev.stopPropagation();
@@ -2195,7 +2182,7 @@
         updateViewButton();
 
         /* ============================================================
-           深浅主题切换（只换 <html data-theme>，样式全靠 CSS 变量跟随）
+           深浅主题切换
            ============================================================ */
         const THEME_KEY = "bm_theme";
         const themeToggle = document.getElementById("themeToggle");
@@ -2206,7 +2193,6 @@
             if (!themeToggle) return;
             const isLight = theme === "light";
             const icon = themeToggle.querySelector(".iconify");
-            // 暗色时显示太阳（点一下变亮），浅色时显示月亮（点一下变暗）
             icon.dataset.icon = isLight ? "lucide:moon" : "lucide:sun";
             themeToggle.dataset.tip = isLight ? "切换到深色模式" : "切换到浅色模式";
         }
@@ -2218,7 +2204,7 @@
         applyTheme(document.documentElement.dataset.theme === "light" ? "light" : "dark");
 
         /* ============================================================
-           手机端底部分类筛选（daisyUI filter；宽屏隐藏，不参与交互）
+           手机端底部分类筛选
            ============================================================ */
         const mobileCatFilter = document.getElementById("mobileCatFilter");
         const mobileFilter = document.getElementById("mobileFilter");
@@ -2233,8 +2219,6 @@
                 { key: "__fav__", label: "收藏", count: bookmarks.filter(b => b.favorite).length },
                 ...cats.map(c => ({ key: c, label: c, count: counts[c] })),
             ];
-            // 用 <label> 包裹：避开了 iOS Safari 对 input 伪元素渲染异常
-            // （daisyUI filter 原生用 input + ::before 注入文字，会在 iOS 上重复两遍）
             mobileCatFilter.innerHTML = items
                 .map(
                     it =>
@@ -2247,21 +2231,19 @@
                 .join("");
         }
 
-        // 事件委托：radio change 冒泡，统一在这里切换分类
         mobileCatFilter.addEventListener("change", (e) => {
             const label = e.target.closest(".cat-chip");
             if (!label || !label.dataset.cat) return;
             activeCategory = label.dataset.cat;
-            renderSidebar(); // 同步桌面侧边栏高亮
+            renderSidebar();
             renderGrid();
             document.getElementById("contentScroll").scrollTo({ top: 0, behavior: "smooth" });
-            // 切完分类后收起抽屉（用户大概率想看书签，不想再被底部条挡）
             mobileFilter.classList.remove("expanded");
             syncHandleState();
         });
 
         /* ============================================================
-           手机端功能菜单抽屉（≤600px 生效；桌面端按钮原位显示不受影响）
+           手机端功能菜单抽屉
            ============================================================ */
         const menuBtn = document.getElementById("menuBtn");
         const menuMask = document.getElementById("menuMask");
@@ -2274,9 +2256,6 @@
                 document.body.classList.remove("menu-open");
             });
         }
-        // 点抽屉里任意功能按钮后自动收起抽屉。
-        // 用事件委托接冒泡：按钮自己的 handler 在 target 阶段已先执行完，
-        // 这里只负责收起抽屉，不影响任何原有功能。
         if (topActions) {
             topActions.addEventListener("click", (e) => {
                 if (e.target.closest(".icon-btn")) {
@@ -2285,7 +2264,6 @@
             });
         }
 
-        // 手柄交互：点击切换 + 在手柄上向上滑/向下滑也能切换
         function syncHandleState() {
             if (!filterHandle) return;
             const expanded = mobileFilter.classList.contains("expanded");
@@ -2293,13 +2271,13 @@
             const hint = filterHandle.querySelector(".handle-hint");
             if (hint) hint.textContent = expanded ? "收起" : "更多分类";
             filterHandle.setAttribute("aria-expanded", String(expanded));
-            filterHandle.querySelector(".iconify").dataset.icon = expanded ? "lucide:chevron-down" : "lucide:chevron-up";
+            filterHandle.querySelector(".iconify").dataset.icon = expanded ? "lucide:chevron-down" :
+            "lucide:chevron-up";
         }
         filterHandle.addEventListener("click", () => {
             mobileFilter.classList.toggle("expanded");
             syncHandleState();
         });
-        // 手柄上的滑动手势：向上滑展开，向下滑收起（阈值 24px，避免误触）
         let handleTouchY = null;
         let handleTouchExpanded = false;
         filterHandle.addEventListener("touchstart", (e) => {
@@ -2311,7 +2289,7 @@
             const dy = e.changedTouches[0].clientY - handleTouchY;
             handleTouchY = null;
             if (Math.abs(dy) < 24) return;
-            const shouldExpand = dy < 0; // 向上为负
+            const shouldExpand = dy < 0;
             if (shouldExpand !== handleTouchExpanded) {
                 mobileFilter.classList.toggle("expanded", shouldExpand);
                 syncHandleState();
@@ -2325,6 +2303,17 @@
         syncBmSearchClear();
         setWallpaper();
         loadBookmarks();
+
+        // ★ 手机端书签搜索框聚焦强化：点击容器时主动聚焦输入框
+        document.getElementById("bmSearchShell").addEventListener("click", function(e) {
+            // 如果点击的是容器本身或清除按钮（清除按钮有自己的逻辑），让输入框获得焦点
+            if (e.target === this || e.target.closest(".bm-search-clear")) {
+                const inp = this.querySelector("input");
+                if (inp && document.activeElement !== inp) {
+                    inp.focus();
+                }
+            }
+        });
     </script>
 </body>
 </html>
