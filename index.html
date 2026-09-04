@@ -313,7 +313,7 @@
         /* 搜索按钮 */
         .search-shell .go-btn {
             flex-shrink: 0;
-            width: 36px;
+            width: 32px;
             height: 100%;
             min-height: 0; /* 覆盖 daisyUI .btn 的 min-height */
             padding: 0;
@@ -326,7 +326,9 @@
             justify-content: center;
             cursor: pointer;
             font-size: 16px;
-            margin-right: 8px;
+            /* 取消原来的 8px margin-right：之前 go-btn 离主搜索框右边太远，
+               加上框的 4px padding 一共 12px，视觉上像游离在两个框之间的空白处 */
+            margin-right: 0;
             transition: color 0.2s, transform 0.15s;
         }
         .search-shell .go-btn:hover {
